@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Biometrics Dashboard - Cargando...</title>
+  <script>
+    // Si no estamos siendo servidos directamente por el rewrite de Vercel desde dashboard/dist, redirigir a dashboard/dist o dashboard
+    if (window.location.pathname === '/' || window.location.pathname.endsWith('index.html')) {
+      // Intentar cargar desde dashboard/dist/index.html si estamos en servidor estático local o GitHub Pages
+      window.location.replace('./dashboard/dist/index.html');
+    }
+  </script>
+</head>
+<body style="background: #0a0f1d; color: #ffffff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh;">
+  <div style="text-align: center;">
+    <h2>⏳ Cargando AI Biometrics Dashboard...</h2>
+    <p><a href="./dashboard/dist/index.html" style="color: #38bdf8;">Haz clic aquí si no redirige automáticamente</a></p>
+  </div>
+</body>
+</html>
