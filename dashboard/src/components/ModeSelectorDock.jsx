@@ -2,29 +2,29 @@ import React, { useState, useEffect } from 'react';
 
 export default function ModeSelectorDock({ activeMenu, onSelectMenu }) {
   const [quote, setQuote] = useState({
-    text: "El movimiento perfecto fluye como el viento entre los árboles del bosque: suave, alineado a 90° y guiado por inteligencia artificial en 60 FPS.",
-    author: "GHIBLI AI BIOMECHANICS STUDIO"
+    text: "El movimiento perfecto no se logra cuando no queda nada que agregar, sino cuando no queda ningún error articular en 60 FPS.",
+    author: "AI BIOMECHANICS COACH PRO"
   });
 
-  // Consulta API dinámica y respaldo motivacional con toque Ghibli & Software Tech
+  // Consulta API dinámica de Motivación y Consejos Deportivos en tiempo real
   useEffect(() => {
     let isMounted = true;
     const fetchInsight = async () => {
       try {
-        const res = await fetch('https://api.quotable.io/random?tags=technology,science,wisdom');
+        const res = await fetch('https://api.quotable.io/random?tags=sports,motivational,wisdom');
         if (!res.ok) throw new Error("API quote error");
         const data = await res.json();
         if (isMounted && data.content) {
           setQuote({
             text: data.content,
-            author: data.author?.toUpperCase() || "GHIBLI TECH LABS"
+            author: data.author?.toUpperCase() || "ATHLETE PRO"
           });
         }
       } catch (e) {
         const fallbackQuotes = [
-          { text: "El movimiento perfecto fluye como el viento entre los árboles del bosque: suave, alineado a 90° y guiado por inteligencia artificial en 60 FPS.", author: "GHIBLI AI BIOMECHANICS STUDIO" },
-          { text: "En nuestro laboratorio, cada línea de software y cada articulación forman una constelación de precisión y belleza.", author: "STUDIO GHIBLI SOFTWARE LAB" },
-          { text: "El castillo ambulante se sostiene con magia; tu cuerpo y nuestro código se sostienen con ángulos perfectos en 3D.", author: "HOWLING NEURAL LABS" }
+          { text: "El movimiento perfecto no se logra cuando no queda nada que agregar, sino cuando no queda ningún error articular en 60 FPS.", author: "BIOMECÁNICA INK PRO" },
+          { text: "Tu espalda baja y rodillas son tus activos más valiosos. Mantén el ángulo a 90° y deja que la IA guíe tu técnica.", author: "COACH IA MEDIAPIPE" },
+          { text: "La consistencia vence al talento cuando el talento no mide sus ángulos de ejecución.", author: "PENN ACTION LAB" }
         ];
         if (isMounted) {
           const rand = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
@@ -37,25 +37,36 @@ export default function ModeSelectorDock({ activeMenu, onSelectMenu }) {
   }, []);
 
   return (
-    <div className="mode-selector-dock">
-      {/* Ticker Etereal y Cita Inspiradora Studio Ghibli Tech */}
+    <div className="mode-selector-dock" style={{
+      width: '100%',
+      padding: '16px 36px',
+      margin: '0',
+      background: '#0a0e11',
+      borderBottom: '1px solid var(--border-color, #22272e)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '20px',
+      flexWrap: 'wrap'
+    }}>
+      {/* Ticker Dinámico con API de Citas y Motivación Deportiva (Sin tarjetas ni navegación redundante) */}
       <div style={{
-        background: 'rgba(18, 32, 45, 0.75)',
-        border: '1px solid var(--border-color)',
+        background: '#14181d',
+        border: '1px solid var(--accent-green, #a1ff4f)',
         borderRadius: '9999px',
-        padding: '12px 28px',
+        padding: '10px 24px',
         display: 'flex',
         alignItems: 'center',
-        gap: '16px',
+        gap: '14px',
         flexGrow: 1,
-        boxShadow: '0 0 25px rgba(56, 189, 248, 0.12)'
+        boxShadow: '0 0 25px rgba(161, 255, 79, 0.15)'
       }}>
-        <span style={{ fontSize: '1.4rem' }}>🍃</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.88rem', color: '#f8fafc', fontWeight: 600, fontStyle: 'italic' }}>
+        <span style={{ fontSize: '1.3rem' }}>💡</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.86rem', color: '#ffffff', fontWeight: 700, fontStyle: 'italic' }}>
             "{quote.text}"
           </span>
-          <span style={{ fontSize: '0.76rem', color: 'var(--accent-blue)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--accent-green, #a1ff4f)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             — {quote.author}
           </span>
         </div>
@@ -63,21 +74,21 @@ export default function ModeSelectorDock({ activeMenu, onSelectMenu }) {
 
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
         <div style={{
-          background: 'rgba(18, 32, 45, 0.8)',
-          border: '1px solid var(--accent-green)',
-          padding: '10px 22px',
+          background: '#14181d',
+          border: '1px solid #00f0ff',
+          padding: '10px 20px',
           borderRadius: '9999px',
-          fontSize: '0.78rem',
-          color: 'var(--accent-green)',
-          fontWeight: 800,
+          fontSize: '0.76rem',
+          color: '#00f0ff',
+          fontWeight: 900,
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
           textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          boxShadow: '0 0 20px rgba(52, 211, 153, 0.2)'
+          letterSpacing: '0.04em',
+          boxShadow: '0 0 20px rgba(0, 240, 255, 0.2)'
         }}>
-          <span>✨ INFERENCIA NEURAL GHIBLI 3D</span>
+          <span>⚡ INFERENCIA NEURAL 2D/3D EN VIVO</span>
         </div>
       </div>
     </div>

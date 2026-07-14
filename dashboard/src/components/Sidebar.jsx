@@ -26,44 +26,42 @@ export default function Sidebar({
 
   return (
     <div className="card sidebar-card" style={{
-      borderRadius: '20px',
-      padding: '24px',
-      background: 'rgba(18, 32, 45, 0.78)',
-      backdropFilter: 'blur(20px)',
+      borderRadius: '18px',
+      padding: '22px',
+      background: 'rgba(20, 24, 29, 0.92)',
       border: '1px solid var(--border-color)',
-      boxShadow: '0 16px 40px rgba(0,0,0,0.65)',
+      boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
       display: 'flex',
       flexDirection: 'column'
     }}>
-      <div className="card-title" style={{ color: 'var(--accent-green)', fontSize: '1.05rem', letterSpacing: '-0.02em' }}>
-        <span>🍃 STUDIO BIOMECÁNICO EN VIVO</span>
+      <div className="card-title" style={{ color: 'var(--accent-green)', fontSize: '1rem', letterSpacing: '-0.02em' }}>
+        <span>⚡ INFERENCIA EN VIVO</span>
       </div>
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '20px', lineHeight: 1.5 }}>
-        Conecta con tu cámara mágica o sube un vídeo del bosque para que nuestra red neural evalúe tu postura y ángulos en tiempo real:
+      <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: '18px', lineHeight: 1.4 }}>
+        Activa tu cámara web o sube cualquier archivo de video (MP4/MOV) para corrección y biomecánica en tiempo real:
       </p>
 
-      {/* Botones principales Ghibli Glass */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '22px' }}>
+      {/* Botones principales INK Pill */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
         <button
-          className="btn"
+          className="btn btn-webcam"
           style={{
             width: '100%',
             justifyContent: 'center',
             padding: '14px 20px',
-            fontSize: '0.86rem',
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, var(--accent-red) 0%, #e11d48 100%)',
+            fontSize: '0.88rem',
+            fontWeight: 900,
+            background: 'var(--accent-red, #ff3366)',
             color: '#ffffff',
-            border: '1px solid var(--accent-red)',
+            border: '1px solid var(--accent-red, #ff3366)',
             borderRadius: '9999px',
             cursor: 'pointer',
             textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            boxShadow: '0 0 20px rgba(248, 113, 113, 0.3)'
+            letterSpacing: '0.04em'
           }}
           onClick={onStartWebcam}
         >
-          📹 ACTIVAR CÁMARA WEB EN VIVO
+          📹 INICIAR CÁMARA WEB EN VIVO
         </button>
 
         <input
@@ -74,106 +72,97 @@ export default function Sidebar({
           onChange={handleFileChange}
         />
         <button
-          className="btn"
+          className="btn btn-upload"
           style={{
             width: '100%',
             justifyContent: 'center',
             padding: '14px 20px',
-            background: 'linear-gradient(135deg, var(--accent-green) 0%, var(--accent-blue) 100%)',
-            color: '#0b131c',
-            fontSize: '0.86rem',
+            background: 'var(--accent-green, #a1ff4f)',
+            color: '#000000',
+            fontSize: '0.88rem',
             fontWeight: 900,
             borderRadius: '9999px',
             cursor: 'pointer',
-            border: '1px solid var(--accent-green)',
+            border: '1px solid var(--accent-green, #a1ff4f)',
             textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            boxShadow: '0 0 20px rgba(52, 211, 153, 0.3)'
+            letterSpacing: '0.04em'
           }}
           onClick={() => fileInputRef.current?.click()}
         >
-          📁 SUBIR VÍDEO O DEMO AL STUDIO
+          📁 SUBIR CUALQUIER VIDEO (MP4/MOV)
         </button>
       </div>
 
-      {/* Buscador Rápido del Studio */}
+      {/* Buscador Rápido */}
       <div style={{ marginBottom: '20px' }}>
         <input
           type="text"
-          placeholder="🔍 Buscar ejercicio o rutina del bosque..."
+          placeholder="🔍 Buscar ejercicio o demo..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
             width: '100%',
-            padding: '12px 18px',
-            borderRadius: '14px',
-            background: 'rgba(11, 19, 28, 0.85)',
+            padding: '12px 16px',
+            borderRadius: '9999px',
+            background: '#0a0e11',
             border: '1px solid var(--border-color)',
             color: '#ffffff',
-            fontFamily: 'var(--font-main)',
-            fontSize: '0.84rem',
+            fontSize: '0.82rem',
             outline: 'none',
-            transition: 'border 0.3s ease'
+            fontFamily: 'var(--font-mono)'
           }}
-          onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
-          onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
         />
       </div>
 
-      {/* Lista de rutinas y ejercicios Ghibli */}
-      <div className="seq-list">
-        {filteredDemos.map((demo, idx) => {
-          // Asignar iconos temáticos del bosque y el cielo de Studio Ghibli
-          const icon = demo.title.toLowerCase().includes('situp') ? '🌲'
-            : demo.title.toLowerCase().includes('squat') ? '☁️'
-            : demo.title.toLowerCase().includes('pushup') ? '🔥'
-            : demo.title.toLowerCase().includes('press') ? '🏰'
-            : '🍃';
-
-          return (
-            <div
-              key={demo.id}
-              className="seq-item"
-              onClick={() => onSelectExampleVideo(demo)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '12px',
-                  background: 'rgba(56, 189, 248, 0.15)',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1.2rem',
-                  flexShrink: 0
-                }}>
-                  {icon}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#ffffff' }}>
-                    {demo.title}
-                  </div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)', marginTop: '2px' }}>
-                    {demo.desc}
-                  </div>
-                </div>
-              </div>
-              <span style={{
-                fontSize: '0.72rem',
-                color: 'var(--accent-green)',
-                fontWeight: 800,
-                background: 'rgba(52, 211, 153, 0.15)',
-                padding: '4px 10px',
-                borderRadius: '9999px',
-                border: '1px solid rgba(52, 211, 153, 0.3)'
-              }}>
-                ▶ VER
-              </span>
+      {/* LISTA DE VIDEOS DE EJEMPLO */}
+      <div className="card-title" style={{ fontSize: '0.88rem', color: 'var(--accent-blue, #00f0ff)', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>🎬 VIDEOS DE EJEMPLO LISTOS</span>
+        <span style={{ fontSize: '0.72rem', background: '#22272e', color: 'var(--accent-blue, #00f0ff)', padding: '3px 10px', borderRadius: '9999px', fontWeight: 800 }}>
+          {filteredDemos.length}
+        </span>
+      </div>
+      <div className="sequence-list" style={{ marginBottom: '20px', maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {filteredDemos.map((demo) => (
+          <div
+            key={demo.id}
+            className="sequence-item demo-item"
+            style={{
+              background: '#181d24',
+              border: '1px solid var(--border-color)',
+              borderRadius: '14px',
+              padding: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              transition: 'all 0.25s ease'
+            }}
+            onClick={() => onSelectExampleVideo(demo)}
+          >
+            <div>
+              <h4 style={{ color: '#ffffff', fontSize: '0.85rem', margin: '0 0 4px 0', fontWeight: 800, textTransform: 'uppercase' }}>
+                ▶ {demo.title}
+              </h4>
+              <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)', margin: 0 }}>{demo.desc}</p>
             </div>
-          );
-        })}
+            <span className={`tag tag-${demo.type}`} style={{ fontSize: '0.68rem', padding: '4px 10px', borderRadius: '9999px', fontWeight: 900 }}>
+              {demo.type === 'correct' ? 'ÓPTIMO' : 'ALERTA'}
+            </span>
+          </div>
+        ))}
+        {filteredDemos.length === 0 && (
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', textAlign: 'center', padding: '16px' }}>
+            No se encontraron ejemplos
+          </div>
+        )}
+      </div>
+
+      {/* Especificaciones IA */}
+      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+        <div className="card-title" style={{ fontSize: '0.82rem', color: 'var(--text-dim)', marginBottom: '6px' }}>🧠 MOTOR BIOMECÁNICO PRO</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', lineHeight: 1.6 }}>
+          Inferencia 60 FPS · 33 landmarks 3D MediaPipe · Filtro de Kalman & EMA adaptativo.
+        </div>
       </div>
     </div>
   );

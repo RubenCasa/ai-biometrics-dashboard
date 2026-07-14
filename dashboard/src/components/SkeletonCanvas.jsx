@@ -211,14 +211,14 @@ export default function SkeletonCanvas({
         ctx.fillStyle = 'rgba(8, 11, 17, 0.15)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const statusColor = realSeq.clase === 0 ? '#34d399' : realSeq.clase === 1 ? '#fbbf24' : '#f87171';
+        const statusColor = realSeq.clase === 0 ? '#10b981' : realSeq.clase === 1 ? '#ef4444' : '#f59e0b';
 
         // HUD Superior
-        ctx.fillStyle = 'rgba(11, 19, 28, 0.88)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(10, 10, canvas.width - 20, 62);
         ctx.fillStyle = statusColor;
         ctx.font = 'bold 12px "JetBrains Mono", monospace';
-        const sourceLabel = seq.isExampleDemo ? '🎬 VÍDEO DEL STUDIO EN VIVO' : '● PENN ACTION DATASET';
+        const sourceLabel = seq.isExampleDemo ? '🎬 VIDEO MP4 EN VIVO' : '● PENN ACTION DATASET';
         ctx.fillText(`${sourceLabel} | ${realSeq.action}`, 18, 30);
         ctx.fillStyle = '#ffffff';
         ctx.font = '11px "JetBrains Mono", monospace';
@@ -405,14 +405,14 @@ export default function SkeletonCanvas({
         ctx.fillStyle = 'rgba(8, 11, 17, 0.15)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const statusColor = seq.clase === 0 ? '#34d399' : seq.clase === 1 ? '#fbbf24' : '#f87171';
+        const statusColor = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
 
         // HUD superior para webcam / subida
-        ctx.fillStyle = 'rgba(11, 19, 28, 0.88)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(10, 10, canvas.width - 20, 62);
         ctx.fillStyle = statusColor;
         ctx.font = 'bold 12px "JetBrains Mono", monospace';
-        const sourceLabel = isWebcam ? '📹 CÁMARA MÁGICA EN VIVO' : '📁 VÍDEO PERSONAL SUBIDO';
+        const sourceLabel = isWebcam ? '📹 CÁMARA WEB EN VIVO' : '📁 VIDEO PERSONAL SUBIDO';
         ctx.fillText(`● ${sourceLabel} | ${seq.action}`, 18, 30);
         ctx.fillStyle = '#ffffff';
         ctx.font = '11px "JetBrains Mono", monospace';
@@ -520,10 +520,10 @@ export default function SkeletonCanvas({
           ctx.stroke();
         }
 
-        const colorHex = seq.clase === 0 ? '#34d399' : seq.clase === 1 ? '#fbbf24' : '#f87171';
+        const colorHex = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
 
-        ctx.fillStyle = 'rgba(11, 19, 28, 0.88)';
-        ctx.fillRect(10, 10, 280, 28);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(10, 10, 260, 28);
         ctx.fillStyle = colorHex;
         ctx.font = 'bold 11px "JetBrains Mono", monospace';
         ctx.fillText(`● PENN ACTION DATASET #${seq.id} | ${seq.action}`, 18, 28);
