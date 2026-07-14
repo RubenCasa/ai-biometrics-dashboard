@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { EXAMPLE_VIDEOS } from '../data/sequences';
 
 export default function Sidebar({
@@ -10,6 +10,7 @@ export default function Sidebar({
   onStartWebcam
 }) {
   const fileInputRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -18,21 +19,56 @@ export default function Sidebar({
     }
   };
 
+  // Filtrar videos de ejemplo según la búsqueda
+  const filteredDemos = EXAMPLE_VIDEOS.filter(demo =>
+    demo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    demo.desc.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Filtrar historial/dataset según la búsqueda
+  const filteredSequences = sequences.map((seq, origIdx) => ({ seq, origIdx })).filter(({ seq }) =>
+    String(seq.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    seq.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    seq.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="card sidebar-card">
-      <div className="card-title">⚡ Análisis en Tiempo Real</div>
-      <p style={{ fontSize: '0.82rem', color: 'var(--text-dim)', marginBottom: '14px' }}>
-        Selecciona una fuente en vivo o prueba con nuestros videos de ejemplo listos:
+    <div className="card sidebar-card" style={{
+      borderRadius: '18px',
+      padding: '20px',
+      background: 'rgba(15, 23, 42, 0.82)',
+      border: '1px solid rgba(56, 189, 248, 0.25)',
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
+      color: '#ffffff'
+    }}>
+      <div className="card-title" style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
+        ⚡ Panel de Control Biomecánico
+      </div>
+      <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '16px' }}>
+        Activa tu cámara web o elige un video de prueba para comenzar la inferencia IA:
       </p>
 
-      {/* Botones de acción principales para CUALQUIER VIDEO O CÁMARA */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '22px' }}>
+      {/* Botones principales */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
         <button
           className="btn btn-webcam"
-          style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '0.9rem', fontWeight: 800 }}
+          style={{
+            width: '100%',
+            justifyContent: 'center',
+            padding: '14px',
+            fontSize: '0.9rem',
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+            color: '#ffffff',
+            border: '1px solid #38bdf8',
+            boxShadow: '0 4px 15px rgba(2, 132, 199, 0.4)',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'transform 0.2s ease'
+          }}
           onClick={onStartWebcam}
         >
-          📹 USAR MI CÁMARA WEB EN VIVO
+          📹 INICIAR CÁMARA WEB EN VIVO
         </button>
 
         <input
@@ -52,7 +88,11 @@ export default function Sidebar({
             color: '#000',
             fontSize: '0.88rem',
             fontWeight: 800,
-            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
+            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            border: 'none',
+            transition: 'transform 0.2s ease'
           }}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -60,72 +100,126 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* LISTA DE VIDEOS DE EJEMPLO */}
-      <div className="card-title" style={{ fontSize: '0.9rem', color: '#38bdf8', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-        🎬 Videos de Ejemplo (Predicción IA)
+      {/* Buscador Rápido */}
+      <div style={{ marginBottom: '18px' }}>
+        <input
+          type="text"
+          placeholder="🔍 Buscar ejercicio o código (ej. Squat, #1659)..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            borderRadius: '10px',
+            background: 'rgba(0, 0, 0, 0.4)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            color: '#ffffff',
+            fontSize: '0.82rem',
+            outline: 'none',
+            fontFamily: 'var(--font-mono)'
+          }}
+        />
       </div>
-      <p style={{ fontSize: '0.76rem', color: 'var(--text-dim)', marginBottom: '10px' }}>
-        Haz clic en cualquiera para probar cómo MediaPipe predice ángulos, repeticiones y postura en vivo:
-      </p>
-      <div className="sequence-list" style={{ marginBottom: '22px' }}>
-        {EXAMPLE_VIDEOS.map((demo) => (
+
+      {/* LISTA DE VIDEOS DE EJEMPLO */}
+      <div className="card-title" style={{ fontSize: '0.88rem', color: '#38bdf8', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>🎬 Videos de Ejemplo listos</span>
+        <span style={{ fontSize: '0.72rem', background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '10px' }}>
+          {filteredDemos.length}
+        </span>
+      </div>
+      <div className="sequence-list" style={{ marginBottom: '20px', maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {filteredDemos.map((demo) => (
           <div
             key={demo.id}
             className="sequence-item demo-item"
             style={{
-              background: 'rgba(56, 189, 248, 0.05)',
-              borderColor: 'rgba(56, 189, 248, 0.2)'
+              background: 'rgba(56, 189, 248, 0.08)',
+              border: '1px solid rgba(56, 189, 248, 0.25)',
+              borderRadius: '12px',
+              padding: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              transition: 'background 0.2s ease'
             }}
             onClick={() => onSelectExampleVideo(demo)}
           >
-            <div className="sequence-info">
-              <h4 style={{ color: '#ffffff', fontSize: '0.88rem' }}>
+            <div>
+              <h4 style={{ color: '#ffffff', fontSize: '0.85rem', margin: '0 0 3px 0', fontWeight: 700 }}>
                 ▶ {demo.title}
               </h4>
-              <p style={{ fontSize: '0.74rem' }}>{demo.desc}</p>
+              <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0 }}>{demo.desc}</p>
             </div>
-            <span className={`tag tag-${demo.type}`} style={{ fontSize: '0.68rem', padding: '3px 8px' }}>
-              PROBAR
+            <span className={`tag tag-${demo.type}`} style={{ fontSize: '0.68rem', padding: '4px 8px', borderRadius: '12px', fontWeight: 800 }}>
+              {demo.type === 'correct' ? 'ÓPTIMO' : 'ALERTA'}
             </span>
           </div>
         ))}
+        {filteredDemos.length === 0 && (
+          <div style={{ fontSize: '0.78rem', color: '#64748b', textAlign: 'center', padding: '12px' }}>
+            No se encontraron ejemplos
+          </div>
+        )}
       </div>
 
       {/* HISTORIAL / BASE DE DATOS PENN ACTION */}
-      <div className="card-title" style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-        📋 Dataset Penn Action & Historial
+      <div className="card-title" style={{ fontSize: '0.88rem', color: '#10b981', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>📋 Dataset Penn Action & Sesiones</span>
+        <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', padding: '2px 8px', borderRadius: '10px' }}>
+          {filteredSequences.length}
+        </span>
       </div>
-      <div className="sequence-list">
-        {sequences.map((seq, idx) => (
-          <div
-            key={seq.id + '-' + idx}
-            className={`sequence-item ${idx === currentSeqIdx ? 'active' : ''}`}
-            onClick={() => onSelectSeq(idx)}
-          >
-            <div className="sequence-info">
-              <h4>
-                {seq.isUserVideo
-                  ? (seq.id === 'WEBCAM' ? '📹' : '🎬')
-                  : '📊'} #{seq.id} — {seq.action}
-              </h4>
-              <p>{seq.nombre}</p>
+      <div className="sequence-list" style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {filteredSequences.map(({ seq, origIdx }) => {
+          const isActive = origIdx === currentSeqIdx;
+          const statusBg = seq.clase === 0 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
+          const statusBorder = seq.clase === 0 ? '#10b981' : '#ef4444';
+
+          return (
+            <div
+              key={seq.id + '-' + origIdx}
+              className={`sequence-item ${isActive ? 'active' : ''}`}
+              style={{
+                background: isActive ? 'rgba(56, 189, 248, 0.2)' : statusBg,
+                border: `1px solid ${isActive ? '#38bdf8' : statusBorder + '40'}`,
+                borderRadius: '12px',
+                padding: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+              onClick={() => onSelectSeq(origIdx)}
+            >
+              <div>
+                <h4 style={{ color: '#ffffff', fontSize: '0.84rem', margin: '0 0 3px 0', fontWeight: 700 }}>
+                  {seq.isUserVideo ? (seq.id === 'WEBCAM' ? '📹' : '📁') : '📊'} #{seq.id} — {seq.action}
+                </h4>
+                <p style={{ fontSize: '0.72rem', color: '#cbd5e1', margin: 0 }}>{seq.nombre}</p>
+              </div>
+              <span style={{
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '3px 8px',
+                borderRadius: '10px',
+                background: seq.clase === 0 ? '#10b981' : '#ef4444',
+                color: '#000'
+              }}>
+                {seq.clase === 0 ? 'OK' : `ERR ${seq.clase}`}
+              </span>
             </div>
-            <span className={`tag tag-${seq.type}`}>
-              {seq.clase === 0 ? 'OK' : `ERR ${seq.clase}`}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Especificaciones IA */}
-      <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid var(--border-color)' }}>
-        <div className="card-title" style={{ fontSize: '0.95rem' }}>🧠 Especificaciones</div>
-        <ul style={{ listStyle: 'none', fontSize: '0.82rem', color: 'var(--text-dim)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <li>• <b>Inferencia:</b> MediaPipe Pose 33 Landmarks</li>
-          <li>• <b>Predicción en Vivo:</b> Ángulos biomecánicos normalizados</li>
-          <li>• <b>Conteo de Reps:</b> Fases excéntrica/concéntrica + EMA</li>
-          <li>• <b>Soporte:</b> Sentadillas, Flexiones, Press Banca, Abdominales y videos personalizados</li>
-        </ul>
+      <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="card-title" style={{ fontSize: '0.85rem', color: '#94a3b8' }}>🧠 Motor Biomecánico</div>
+        <div style={{ fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.6 }}>
+          Inferencia en tiempo real 60 FPS · 33 landmarks 3D MediaPipe · Filtro de Kalman & EMA adaptativo.
+        </div>
       </div>
     </div>
   );
