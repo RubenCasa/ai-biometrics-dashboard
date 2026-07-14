@@ -169,9 +169,9 @@ export class ExerciseDetector {
    */
   process(landmarks) {
     const metrics = extractMetrics(landmarks);
-    if (!metrics || metrics.avgVisibility < 0.4) {
+    if (!metrics || metrics.avgVisibility < 0.20) {
       return {
-        exercise: 'Esperando detección...',
+        exercise: 'Esperando detección (Visibilidad)...',
         phase: 'idle',
         repCount: this.repCount,
         metrics: null,
@@ -185,10 +185,10 @@ export class ExerciseDetector {
     this.buffer.push(metrics);
     if (this.buffer.length > this.bufferSize) this.buffer.shift();
 
-    // Necesitamos al menos 15 frames para clasificar
-    if (this.buffer.length < 15) {
+    // Necesitamos al menos 10 frames para clasificar
+    if (this.buffer.length < 10) {
       return {
-        exercise: 'Calibrando...',
+        exercise: 'Calibrando MediaPipe 3D...',
         phase: 'idle',
         repCount: this.repCount,
         metrics,
@@ -199,9 +199,9 @@ export class ExerciseDetector {
     // Detectar ejercicio
     const detected = this._detectExercise(metrics);
     
-    // Suavizar detección (voto mayoritario de últimos 30 frames)
+    // Suavizar detección (voto mayoritario de últimos 20 frames)
     this.exerciseHistory.push(detected.name);
-    if (this.exerciseHistory.length > 30) this.exerciseHistory.shift();
+    if (this.exerciseHistory.length > 20) this.exerciseHistory.shift();
     const smoothedExercise = this._majorityVote(this.exerciseHistory);
 
     // Detectar fase y contar reps
@@ -239,51 +239,56 @@ export class ExerciseDetector {
 
     // ─── Reglas de Clasificación ─────────────────────────────────────
 
-    // SQUAT: Gran rango vertical de cadera + rodillas flexionadas + tronco erguido
-    if (hipRange > 0.08 && avgKnee < 155 && kneeVariation > 15 && avgBodyDY > 0.15) {
-      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.95, 0.6 + hipRange * 2) };
+    // SQUAT: Rango vertical de cadera + rodillas flexionadas + tronco erguido
+    if ((hipRange > 0.04 || avgKnee < 165) && kneeVariation > 8 && avgBodyDY > 0.15) {
+      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + hipRange * 2) };
     }
 
-    // PUSHUP: Cuerpo horizontal (bodyDY bajo) + codos flexionándose
-    if (avgBodyDY < 0.20 && avgElbow < 155 && avgTrunk > 40) {
-      return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.92, 0.55 + (180 - avgElbow) / 100) };
+    // PUSHUP: Cuerpo horizontal (bodyDY bajo) + codos flexionándose o tronco extendido horizontalmente
+    if (avgBodyDY < 0.22 && avgElbow < 165 && avgTrunk > 35) {
+      return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.94, 0.60 + (180 - avgElbow) / 100) };
     }
 
-    // SITUP: Rango moderado de cadera + tronco se flexiona mucho
-    if (hipRange > 0.05 && avgHip < 130 && avgBodyDY < 0.35) {
-      return { name: 'SITUP (Abdominal)', confidence: Math.min(0.90, 0.50 + hipRange * 3) };
+    // SITUP: Rango moderado de cadera + tronco se flexiona o cuerpo acostado/sentado
+    if ((hipRange > 0.03 || avgHip < 140) && avgBodyDY < 0.38 && avgTrunk < 55) {
+      return { name: 'SITUP (Abdominal)', confidence: Math.min(0.92, 0.55 + hipRange * 3) };
     }
 
     // LUNGE: Asimetría de rodillas (una muy flexionada, otra más extendida)
     const kneeAsymmetry = Math.abs(m.kneeAngleL - m.kneeAngleR);
-    if (kneeAsymmetry > 25 && (m.kneeAngleL < 120 || m.kneeAngleR < 120) && hipRange > 0.05) {
-      return { name: 'LUNGE (Zancada)', confidence: Math.min(0.88, 0.50 + kneeAsymmetry / 80) };
+    if (kneeAsymmetry > 20 && (m.kneeAngleL < 130 || m.kneeAngleR < 130)) {
+      return { name: 'LUNGE (Zancada)', confidence: Math.min(0.90, 0.55 + kneeAsymmetry / 80) };
     }
 
     // DEADLIFT: Cadera se mueve mucho, tronco se inclina, rodillas casi extendidas
-    if (hipRange > 0.06 && avgTrunk > 15 && avgKnee > 140) {
-      return { name: 'DEADLIFT (Peso Muerto)', confidence: Math.min(0.85, 0.45 + avgTrunk / 50) };
+    if (hipRange > 0.05 && avgTrunk > 15 && avgKnee > 140) {
+      return { name: 'DEADLIFT (Peso Muerto)', confidence: Math.min(0.88, 0.50 + avgTrunk / 50) };
     }
 
     // PLANK: Cuerpo horizontal y estático (poco movimiento)
-    if (avgBodyDY < 0.18 && hipRange < 0.03 && avgTrunk > 50) {
-      return { name: 'PLANK (Plancha)', confidence: 0.80 };
+    if (avgBodyDY < 0.20 && hipRange < 0.03 && avgTrunk > 45) {
+      return { name: 'PLANK (Plancha)', confidence: 0.85 };
     }
 
     // JUMPING JACK: Movimiento rápido de brazos (ángulo de hombro cambia mucho)
     const shoulderVar = Math.max(...recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2))
                       - Math.min(...recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2));
-    if (shoulderVar > 30 && hipRange > 0.03) {
-      return { name: 'JUMPING JACK', confidence: Math.min(0.85, 0.50 + shoulderVar / 80) };
+    if (shoulderVar > 25) {
+      return { name: 'JUMPING JACK', confidence: Math.min(0.88, 0.55 + shoulderVar / 80) };
     }
 
     // OVERHEAD PRESS: Brazos se extienden hacia arriba
-    if (m.shoulderAngleL > 140 && m.shoulderAngleR > 140 && avgElbow > 130) {
-      return { name: 'PRESS (Prensa)', confidence: 0.78 };
+    if (m.shoulderAngleL > 130 && m.shoulderAngleR > 130 && avgElbow > 120) {
+      return { name: 'PRESS (Prensa)', confidence: 0.82 };
+    }
+
+    // SI ESTÁ EN PIE O PREPARÁNDOSE
+    if (avgBodyDY > 0.25) {
+      return { name: '🟢 EN PIE / PREPARANDO EJERCICIO', confidence: 0.85 };
     }
 
     // EJERCICIO GENERAL (no clasificado)
-    return { name: 'EJERCICIO GENERAL', confidence: 0.50 };
+    return { name: 'EJERCICIO DINÁMICO EN CURSO', confidence: 0.70 };
   }
 
   /**
@@ -291,7 +296,7 @@ export class ExerciseDetector {
    * Usa un umbral dinámico basado en el rango de movimiento observado.
    */
   _updatePhaseAndReps(metrics, exercise) {
-    if (exercise === 'EJERCICIO GENERAL' || exercise === 'Calibrando...' || exercise === 'PLANK (Plancha)') {
+    if (exercise.includes('Calibrando') || exercise.includes('Esperando') || exercise === 'PLANK (Plancha)' || exercise.includes('EN PIE')) {
       return;
     }
 

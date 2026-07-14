@@ -37,14 +37,28 @@ export default function SkeletonCanvas({
   const [webcamError, setWebcamError] = useState(null);
   const streamRef = useRef(null);
 
-  // Inicializar MediaPipe Pose (solo si se necesita para webcam o video subido)
+  // Refs para mantener estado estable dentro del drawLoop sin re-renderizar
+  const seqRef = useRef(seq);
+  const onLiveAssessmentUpdateRef = useRef(onLiveAssessmentUpdate);
+  const lastUpdateFrameRef = useRef(-100);
+
+  useEffect(() => {
+    seqRef.current = seq;
+  }, [seq]);
+
+  useEffect(() => {
+    onLiveAssessmentUpdateRef.current = onLiveAssessmentUpdate;
+  }, [onLiveAssessmentUpdate]);
+
+  // Inicializar MediaPipe Pose robusto con sondeo por si el CDN tarda en cargar
   useEffect(() => {
     let active = true;
+    let pollInterval = null;
 
-    const initPose = async () => {
+    const tryInitPose = () => {
+      if (!active) return false;
       if (typeof window.Pose === 'undefined') {
-        console.warn('[MediaPipe] Librería Pose no encontrada en window.Pose.');
-        return;
+        return false;
       }
       try {
         const pose = new window.Pose({
@@ -54,8 +68,8 @@ export default function SkeletonCanvas({
           modelComplexity: 1,
           smoothLandmarks: true,
           enableSegmentation: false,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5
+          minDetectionConfidence: 0.4,
+          minTrackingConfidence: 0.4
         });
         pose.onResults((results) => {
           if (!active) return;
@@ -75,38 +89,59 @@ export default function SkeletonCanvas({
             });
             if (historyRef.current.length > 60) historyRef.current.shift();
 
-            const updateObj = {
-              exercise: res.exercise,
-              action: res.exercise,
-              repCount: res.repCount,
-              phase: res.phase,
-              clase: res.status?.clase ?? 0,
-              type: res.status?.type ?? 'correct',
-              nombre: res.status?.nombre ?? 'Postura Analizada',
-              confianza: res.status?.confianza ?? 0.95,
-              feedback: res.status?.feedback ?? 'Evaluando técnica de movimiento en tiempo real...',
-              qualityScore: res.status?.qualityScore ?? 95,
-              history: [...historyRef.current]
-            };
-            onLiveAssessmentUpdate?.(updateObj);
+            // Throttle para actualizar al padre cada 5 frames o si cambió ejercicio/fase/clase para evitar stutter
+            const currentSeq = seqRef.current || {};
+            const exerciseChanged = res.exercise !== currentSeq.action && !res.exercise.includes('Calibrando') && !res.exercise.includes('Esperando');
+            const repChanged = res.repCount !== currentSeq.repCount;
+            const phaseChanged = res.phase !== currentSeq.phase;
+            const claseChanged = (res.status?.clase ?? 0) !== currentSeq.clase;
+
+            if (exerciseChanged || repChanged || phaseChanged || claseChanged || Math.abs(historyRef.current.length - lastUpdateFrameRef.current) >= 5) {
+              lastUpdateFrameRef.current = historyRef.current.length;
+              const updateObj = {
+                exercise: res.exercise,
+                action: res.exercise,
+                repCount: res.repCount,
+                phase: res.phase,
+                clase: res.status?.clase ?? 0,
+                type: res.status?.type ?? 'correct',
+                nombre: res.status?.nombre ?? 'Postura Analizada',
+                confianza: res.status?.confianza ?? 0.95,
+                feedback: res.status?.feedback ?? 'Evaluando técnica de movimiento en tiempo real...',
+                qualityScore: res.status?.qualityScore ?? 95,
+                history: [...historyRef.current]
+              };
+              onLiveAssessmentUpdateRef.current?.(updateObj);
+            }
           }
         });
         mpPoseRef.current = pose;
         setMpReady(true);
+        if (pollInterval) clearInterval(pollInterval);
+        return true;
       } catch (err) {
         console.error('[MediaPipe] Error inicializando Pose:', err);
+        return false;
       }
     };
 
-    initPose();
+    if (!tryInitPose()) {
+      pollInterval = setInterval(() => {
+        if (tryInitPose()) {
+          clearInterval(pollInterval);
+        }
+      }, 200);
+    }
+
     return () => {
       active = false;
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, []);
 
   // Manejar cámara web
   useEffect(() => {
-    if (!isWebcam || !seq.isUserVideo) {
+    if (!isWebcam) {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(t => t.stop());
         streamRef.current = null;
@@ -161,15 +196,15 @@ export default function SkeletonCanvas({
       }
       setWebcamActive(false);
     };
-  }, [isWebcam, seq.isUserVideo]);
+  }, [isWebcam]);
 
-  // Asegurar reproducción de video al cambiar src
+  // Asegurar reproducción de video al cambiar src sin re-cargar constantemente
   useEffect(() => {
-    if (seq.isUploadedVideo && videoRef.current) {
+    if (videoSrc && videoRef.current) {
       videoRef.current.load();
       videoRef.current.play().catch(() => {});
     }
-  }, [videoSrc, seq.isUploadedVideo]);
+  }, [videoSrc]);
 
   // Bucle principal de renderizado en Canvas
   useEffect(() => {
@@ -361,11 +396,12 @@ export default function SkeletonCanvas({
       // =========================================================================
       else if (seq.isUploadedVideo || isWebcam) {
         const videoSource = isWebcam ? webcamRef.current : videoRef.current;
+        const isVideoReady = videoSource && (videoSource.readyState >= 2 || (isWebcam && webcamActive && videoSource.srcObject));
 
-        if (videoSource && videoSource.readyState >= 2) {
+        if (isVideoReady) {
           ctx.drawImage(videoSource, 0, 0, canvas.width, canvas.height);
 
-          if (mpReady && mpPoseRef.current && !processingFrame && !videoSource.paused) {
+          if (mpReady && mpPoseRef.current && !processingFrame && (!videoSource.paused || isWebcam)) {
             processingFrame = true;
             try {
               await mpPoseRef.current.send({ image: videoSource });
@@ -396,7 +432,7 @@ export default function SkeletonCanvas({
             ctx.fillStyle = '#38bdf8';
             ctx.font = 'bold 13px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
-            const msg = !mpReady ? '⚡ CARGANDO MOTOR IA MEDIAPIPE CDN...' : '⏳ CARGANDO FOTOGRAMAS DEL VIDEO...';
+            const msg = !mpReady ? '⚡ CARGANDO MOTOR IA MEDIAPIPE CDN...' : (isWebcam ? '⏳ INICIALIZANDO CÁMARA WEB...' : '⏳ CARGANDO FOTOGRAMAS DEL VIDEO...');
             ctx.fillText(msg, canvas.width / 2, canvas.height / 2 + 5);
             ctx.textAlign = 'start';
           }
@@ -451,7 +487,7 @@ export default function SkeletonCanvas({
         }
 
         const lm = mpLandmarksRef.current;
-        if (lm && (videoSource?.readyState >= 2)) {
+        if (lm && isVideoReady) {
           const joints = MP_TO_PENN.map(idx => ({
             x: lm[idx].x * canvas.width,
             y: lm[idx].y * canvas.height,
@@ -460,7 +496,7 @@ export default function SkeletonCanvas({
 
           ctx.lineCap = 'round';
           PENN_CONNECTIONS.forEach(([i, j]) => {
-            if (joints[i].vis > 0.35 && joints[j].vis > 0.35) {
+            if (joints[i].vis > 0.15 && joints[j].vis > 0.15) {
               ctx.strokeStyle = statusColor;
               ctx.lineWidth = 8;
               ctx.globalAlpha = 0.25;
@@ -479,7 +515,7 @@ export default function SkeletonCanvas({
           });
 
           joints.forEach(pt => {
-            if (pt.vis > 0.35) {
+            if (pt.vis > 0.15) {
               ctx.beginPath();
               ctx.arc(pt.x, pt.y, 12, 0, Math.PI * 2);
               ctx.fillStyle = statusColor;
@@ -520,13 +556,6 @@ export default function SkeletonCanvas({
           ctx.stroke();
         }
 
-        const colorHex = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-        ctx.fillRect(10, 10, 260, 28);
-        ctx.fillStyle = colorHex;
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.fillText(`● PENN ACTION DATASET #${seq.id} | ${seq.action}`, 18, 28);
 
         const t = (frameIdx / 45) * Math.PI * 2;
         const flex = Math.sin(t);
@@ -548,6 +577,8 @@ export default function SkeletonCanvas({
           { x: 280, y: 355 },
           { x: 360, y: 355 }
         ];
+
+        const colorHex = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
 
         ctx.strokeStyle = colorHex;
         ctx.lineWidth = 4;
@@ -621,7 +652,7 @@ export default function SkeletonCanvas({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [seq, mpReady, frameIdx, isWebcam, webcamActive, webcamError, videoSrc]);
+  }, [seq, mpReady, frameIdx, isWebcam, webcamActive, webcamError, videoSrc, isPlaying]);
 
   return (
     <div className="canvas-container">

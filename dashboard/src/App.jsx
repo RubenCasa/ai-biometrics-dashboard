@@ -77,7 +77,7 @@ export default function App() {
     const uploadedSeq = {
       id: "MI-VIDEO",
       vidId: null,
-      action: file.name.replace(/\.[^/.]+$/, "").toUpperCase() || "BENCHMARK IA",
+      action: file.name.replace(/\.[^/.]+$/, "").toUpperCase() || "VIDEO SUBIDO",
       clase: 0,
       confianza: 0.942,
       nombre: "Analizando con MediaPipe...",
@@ -89,9 +89,21 @@ export default function App() {
       phase: 'idle',
       qualityScore: 0
     };
-    setSequences(prev => [...prev, uploadedSeq]);
+    setSequences(prev => {
+      const existingIdx = prev.findIndex(s => s.id === "MI-VIDEO");
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = uploadedSeq;
+        return copy;
+      }
+      return [...prev, uploadedSeq];
+    });
+    setSequences(prev => {
+      const idx = prev.findIndex(s => s.id === "MI-VIDEO");
+      if (idx >= 0) setCurrentSeqIdx(idx);
+      return prev;
+    });
     setUserVideoSrc(videoURL);
-    setCurrentSeqIdx(sequences.length);
     setFrameIdx(0);
     setIsWebcam(false);
     setActiveMenu('live');
@@ -114,8 +126,20 @@ export default function App() {
       phase: 'idle',
       qualityScore: 0
     };
-    setSequences(prev => [...prev, webcamSeq]);
-    setCurrentSeqIdx(sequences.length);
+    setSequences(prev => {
+      const existingIdx = prev.findIndex(s => s.id === "WEBCAM");
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = webcamSeq;
+        return copy;
+      }
+      return [...prev, webcamSeq];
+    });
+    setSequences(prev => {
+      const idx = prev.findIndex(s => s.id === "WEBCAM");
+      if (idx >= 0) setCurrentSeqIdx(idx);
+      return prev;
+    });
     setIsWebcam(true);
     setFrameIdx(0);
     setActiveMenu('live');

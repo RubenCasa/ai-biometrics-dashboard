@@ -73,17 +73,17 @@ export function evaluatePoseAndExercise(landmarks, history = []) {
 
   // Extraer métricas biomecánicas normalizadas
   const metrics = extractMetrics(landmarks);
-  if (!metrics || metrics.avgVisibility < 0.4) {
+  if (!metrics || metrics.avgVisibility < 0.20) {
     return {
-      exercise: 'Visibilidad baja',
+      exercise: 'Esperando visibilidad del cuerpo...',
       repCount: globalDetector.repCount,
       phase: 'idle',
       status: {
         clase: 0,
         type: 'correct',
-        nombre: 'Visibilidad insuficiente',
+        nombre: 'Buscando cuerpo en cámara...',
         confianza: 0,
-        feedback: '📷 Aléjate un poco de la cámara para que pueda detectar tu cuerpo completo.',
+        feedback: '📷 Asegúrate de estar dentro del encuadre y con buena iluminación.',
         qualityScore: 0
       }
     };
