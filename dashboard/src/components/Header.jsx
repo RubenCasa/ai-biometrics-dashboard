@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 export default function Header({ onToggleSidebar, activeMenu }) {
   const [audioCoachActive, setAudioCoachActive] = useState(true);
-  const [weatherData, setWeatherData] = useState({ temp: '21.5°C', humidity: '44%', status: '⚡ O2 Óptimo' });
+  const [weatherData, setWeatherData] = useState({ temp: '21.5°C', humidity: '44%', status: '🍃 Brisa Óptima' });
   const [loadingWeather, setLoadingWeather] = useState(true);
 
   // Consulta API pública de Clima y Biometría Ambiental en tiempo real (Open-Meteo API)
@@ -19,13 +19,12 @@ export default function Header({ onToggleSidebar, activeMenu }) {
           setWeatherData({
             temp: `${t}°C`,
             humidity: `${h}%`,
-            status: t > 26 ? '🔥 Calor (Hidrátate)' : t < 15 ? '🧊 Calentamiento extra' : '⚡ Clima Óptimo'
+            status: t > 26 ? '🔥 Viento Cálido (Hidrátate)' : t < 15 ? '🌲 Brisa Fresca de Bosque' : '🍃 Clima Óptimo de Castillo'
           });
         }
       } catch (err) {
-        // Fallback robusto para Vercel y offline sin romper la UI
         if (isMounted) {
-          setWeatherData({ temp: '21.8°C', humidity: '45%', status: '⚡ Clima Óptimo' });
+          setWeatherData({ temp: '21.8°C', humidity: '45%', status: '🍃 Clima Óptimo de Bosque' });
         }
       } finally {
         if (isMounted) setLoadingWeather(false);
@@ -42,7 +41,7 @@ export default function Header({ onToggleSidebar, activeMenu }) {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       if (nextState) {
-        const u = new SpeechSynthesisUtterance("Coach biomecánico de voz activado en modo profesional. ¡Listo!");
+        const u = new SpeechSynthesisUtterance("Asistente biomecánico Studio Ghibli activado. Todo en orden.");
         u.lang = 'es-ES';
         window.speechSynthesis.speak(u);
       }
@@ -53,9 +52,9 @@ export default function Header({ onToggleSidebar, activeMenu }) {
     <header className="main-header" style={{
       justifyContent: 'space-between',
       padding: '16px 36px',
-      background: 'rgba(10, 14, 17, 0.94)',
+      background: 'rgba(11, 19, 28, 0.88)',
       backdropFilter: 'blur(24px)',
-      borderBottom: '1px solid var(--border-color, #22272e)',
+      borderBottom: '1px solid var(--border-color)',
       position: 'sticky',
       top: 0,
       zIndex: 1000,
@@ -64,23 +63,22 @@ export default function Header({ onToggleSidebar, activeMenu }) {
       gap: '20px',
       flexWrap: 'wrap'
     }}>
-      {/* Brand & Hamburger (Sin Navbar Arriba, Puro Telemetría INK Games) */}
+      {/* Brand & Hamburger (Ethereal Studio Ghibli Tech Vibe) */}
       <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {activeMenu === 'live' && (
           <button
-            className="hamburger-btn"
+            className="btn"
             onClick={onToggleSidebar}
-            aria-label="Abrir panel de control lateral"
+            aria-label="Abrir panel lateral del Studio"
             style={{
-              background: '#14181d',
-              border: '1px solid #22272e',
-              color: 'var(--accent-green, #a1ff4f)',
+              background: 'rgba(20, 36, 52, 0.75)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--accent-blue)',
               borderRadius: '9999px',
               padding: '8px 16px',
               fontSize: '1.1rem',
               cursor: 'pointer',
-              fontWeight: 800,
-              transition: 'all 0.3s ease'
+              fontWeight: 800
             }}
           >
             ☰
@@ -90,103 +88,71 @@ export default function Header({ onToggleSidebar, activeMenu }) {
           width: '48px',
           height: '48px',
           borderRadius: '14px',
-          background: 'var(--accent-green, #a1ff4f)',
-          color: '#000000',
+          background: 'linear-gradient(135deg, var(--accent-green) 0%, var(--accent-blue) 100%)',
+          color: '#0b131c',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '1.6rem',
           fontWeight: 900,
-          boxShadow: '0 0 25px rgba(161, 255, 79, 0.4)',
-          flexShrink: 0
-        }}>⚡</div>
+          boxShadow: '0 0 25px rgba(52, 211, 153, 0.4)'
+        }}>
+          🍃
+        </div>
         <div className="brand-text">
-          <h1 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '1.45rem',
-            fontWeight: 900,
-            letterSpacing: '-0.03em',
-            textTransform: 'uppercase',
-            color: '#ffffff',
-            margin: 0,
-            lineHeight: 1.1
-          }}>AI BIOMETRICS // INK ATHLETE</h1>
-          <p style={{
-            fontSize: '0.75rem',
-            color: 'var(--text-dim, #8b949e)',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            margin: 0
-          }}>Corrección Postural en Vivo 60 FPS · Inteligencia Artificial Biomecánica</p>
+          <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 900, letterSpacing: '-0.03em' }}>GHIBLI BIO-TECH LABS</h1>
+          <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--accent-blue)', fontWeight: 700, letterSpacing: '0.06em' }}>
+            SOFTWARE & BIOMECHANICS AI STUDIO
+          </p>
         </div>
       </div>
 
-      {/* Telemetría Ambiental API en Tiempo Real (Reemplaza a la vieja barra de navegación aquí) */}
-      <div className="api-weather-pill" style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        background: '#14181d',
-        border: '1px solid rgba(0, 240, 255, 0.35)',
-        padding: '8px 20px',
-        borderRadius: '9999px',
-        boxShadow: '0 0 20px rgba(0, 240, 255, 0.12)'
-      }}>
-        <span style={{ fontSize: '1.1rem' }}>🌦️</span>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: '0.68rem', color: '#8b949e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            API AMBIENTE ESTUDIO (OPEN-METEO)
-          </span>
-          <span style={{ fontSize: '0.84rem', color: '#00f0ff', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
-            {loadingWeather ? '⏳ Sincronizando API...' : `${weatherData.temp} · ${weatherData.humidity} · ${weatherData.status}`}
-          </span>
-        </div>
-      </div>
-
-      {/* Racha & Coach de Voz */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-        <button
-          onClick={toggleAudioCoach}
-          title="Activar o desactivar motivación y corrección por voz"
-          style={{
-            background: audioCoachActive ? 'rgba(161, 255, 79, 0.18)' : '#14181d',
-            border: `1px solid ${audioCoachActive ? 'var(--accent-green, #a1ff4f)' : '#22272e'}`,
-            color: audioCoachActive ? 'var(--accent-green, #a1ff4f)' : '#8b949e',
-            padding: '9px 18px',
-            borderRadius: '9999px',
-            fontSize: '0.78rem',
-            fontWeight: 900,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            boxShadow: audioCoachActive ? '0 0 20px rgba(161, 255, 79, 0.3)' : 'none',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <span>{audioCoachActive ? '🔊 VOZ IA: ON' : '🔇 VOZ IA: OFF'}</span>
-        </button>
-
-        <div className="streak-pill" style={{
-          background: '#14181d',
-          color: 'var(--accent-green, #a1ff4f)',
-          border: '1px solid var(--accent-green, #a1ff4f)',
+      {/* Telemetry Ethereal Badges */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+        <div style={{
+          background: 'rgba(18, 32, 45, 0.8)',
+          border: '1px solid var(--border-color)',
           padding: '8px 18px',
           borderRadius: '9999px',
-          fontSize: '0.78rem',
-          fontWeight: 900,
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          boxShadow: '0 0 20px rgba(161, 255, 79, 0.25)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em'
+          gap: '10px',
+          fontSize: '0.8rem'
         }}>
-          <span>🔥 RACHA: 5 DÍAS</span>
+          <span style={{ color: 'var(--accent-green)' }}>🌲 BOSQUE NEURAL:</span>
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>60 FPS BIO-FLOW</span>
         </div>
+
+        <div style={{
+          background: 'rgba(18, 32, 45, 0.8)',
+          border: '1px solid var(--border-color)',
+          padding: '8px 18px',
+          borderRadius: '9999px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          fontSize: '0.8rem'
+        }}>
+          <span style={{ color: 'var(--accent-blue)' }}>☁️ CIELO & CLIMA:</span>
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>
+            {loadingWeather ? '⏳ Sincronizando...' : `${weatherData.temp} | ${weatherData.status}`}
+          </span>
+        </div>
+
+        <button
+          onClick={toggleAudioCoach}
+          className="btn"
+          style={{
+            background: audioCoachActive ? 'rgba(52, 211, 153, 0.15)' : 'rgba(248, 113, 113, 0.15)',
+            border: `1px solid ${audioCoachActive ? 'var(--accent-green)' : 'var(--accent-red)'}`,
+            color: audioCoachActive ? 'var(--accent-green)' : 'var(--accent-red)',
+            padding: '8px 18px',
+            fontSize: '0.8rem',
+            fontWeight: 800
+          }}
+        >
+          {audioCoachActive ? '🔊 VOZ GHIBLI: ON' : '🔇 VOZ GHIBLI: OFF'}
+        </button>
       </div>
     </header>
   );

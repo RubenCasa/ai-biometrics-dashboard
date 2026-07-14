@@ -46,71 +46,71 @@ export default function GuideView({ onGoToLive }) {
           </p>
         </div>
 
-        <div className="card" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(16, 185, 129, 0.25)', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '-14px', left: '20px', background: '#10b981', color: '#000', fontWeight: 800, fontSize: '0.8rem', padding: '4px 12px', borderRadius: '12px' }}>
-            PASO 2
+        <div className="card" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(18, 32, 45, 0.78)', backdropFilter: 'blur(16px)', border: '1px solid rgba(52, 211, 153, 0.35)', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '-14px', left: '20px', background: '#34d399', color: '#0b131c', fontWeight: 800, fontSize: '0.8rem', padding: '4px 14px', borderRadius: '9999px', boxShadow: '0 0 15px rgba(52, 211, 153, 0.4)' }}>
+            🌲 PASO 2
           </div>
-          <div style={{ fontSize: '2.5rem', margin: '14px 0 12px 0' }}>🏃‍♂️</div>
-          <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Aléjate 1.5 Metros y Ejercítate</h4>
+          <div style={{ fontSize: '2.5rem', margin: '14px 0 12px 0' }}>🍃</div>
+          <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Aléjate 1.5 Metros y Conecta con el Bosque</h4>
           <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: 1.5 }}>
-            Aléjate un poco para que la cámara vea al menos tu torso o cuerpo completo. Comienza a hacer tus sentadillas, flexiones o abdominales de manera natural a tu propio ritmo.
+            Aléjate un poco para que la cámara del Studio vea tu cuerpo o torso. Comienza a hacer tus sentadillas, flexiones o abdominales de manera fluida y natural.
           </p>
         </div>
 
-        <div className="card" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(168, 85, 247, 0.25)', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '-14px', left: '20px', background: '#a855f7', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '4px 12px', borderRadius: '12px' }}>
-            PASO 3
+        <div className="card" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(18, 32, 45, 0.78)', backdropFilter: 'blur(16px)', border: '1px solid rgba(192, 132, 252, 0.35)', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '-14px', left: '20px', background: '#c084fc', color: '#0b131c', fontWeight: 800, fontSize: '0.8rem', padding: '4px 14px', borderRadius: '9999px', boxShadow: '0 0 15px rgba(192, 132, 252, 0.4)' }}>
+            ☁️ PASO 3
           </div>
-          <div style={{ fontSize: '2.5rem', margin: '14px 0 12px 0' }}>🗣️ / 📊</div>
-          <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Recibe Diagnóstico Instantáneo</h4>
+          <div style={{ fontSize: '2.5rem', margin: '14px 0 12px 0' }}>✨</div>
+          <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Recibe Diagnóstico Bio-Neural en Vivo</h4>
           <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: 1.5 }}>
-            El esqueleto virtual se dibujará sobre ti. Si está en <b style={{ color: '#10b981' }}>Verde</b> tu postura es perfecta. Si cambia a <b style={{ color: '#f59e0b' }}>Amarillo/Rojo</b>, lee la tarjeta de retroalimentación para corregir el error de inmediato.
+            La constelación del esqueleto se dibujará sobre ti. Si está en <b style={{ color: '#34d399' }}>Esmeralda</b> tu postura es ideal. Si cambia a <b style={{ color: '#fbbf24' }}>Ámbar/Rosa</b>, lee la guía del entrenador para corregir.
           </p>
         </div>
       </div>
 
-      {/* Botón grande para saltar a probar */}
+      {/* Botón grande para saltar a probar al Studio */}
       <div style={{ textAlign: 'center', marginBottom: '44px' }}>
         <button
           onClick={onGoToLive}
           style={{
             padding: '16px 36px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #10b981, #38bdf8)',
-            color: '#000',
-            fontSize: '1.1rem',
-            fontWeight: 800,
+            borderRadius: '9999px',
+            background: 'linear-gradient(135deg, #34d399, #38bdf8)',
+            color: '#0b131c',
+            fontSize: '1.05rem',
+            fontWeight: 900,
             border: 'none',
             cursor: 'pointer',
-            boxShadow: '0 8px 25px rgba(16, 185, 129, 0.4)',
-            transition: 'transform 0.2s ease'
+            boxShadow: '0 8px 25px rgba(52, 211, 153, 0.4)',
+            transition: 'transform 0.25s ease'
           }}
         >
-          ⚡ ¡ENTENDIDO! IR AL ESTUDIO Y PROBAR AHORA
+          🍃 ¡ENTENDIDO! ENTRAR AL STUDIO Y PROBAR AHORA
         </button>
       </div>
 
       {/* Preguntas Frecuentes (FAQ) */}
       <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '20px' }}>
-        ❓ Preguntas Frecuentes (Explicadas de forma sencilla)
+        ❓ Preguntas Frecuentes del Studio Ghibli AI
       </h3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div className="card" style={{ padding: '20px', borderRadius: '14px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="card" style={{ padding: '20px', borderRadius: '16px', background: 'rgba(18, 32, 45, 0.65)', border: '1px solid var(--border-color)' }}>
           <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#38bdf8', marginBottom: '8px' }}>
-            🔒 ¿Mis videos o imágenes se guardan en internet o los puede ver alguien más?
+            🔒 ¿Mis vídeos o imágenes se guardan en internet o los puede ver alguien más?
           </h4>
           <p style={{ fontSize: '0.88rem', color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>
-            <b>No, absolutamente nunca.</b> El 100% del reconocimiento del cuerpo y el cálculo biomecánico ocurre de forma local y privada dentro del procesador de tu propio navegador web. Ningún video o imagen es enviado a servidores ni guardado en la nube.
+            <b>No, absolutamente nunca.</b> El 100% del reconocimiento bio-neural y el cálculo 3D ocurre de forma local y privada dentro del procesador de tu navegador web. Ningún vídeo se sube a la nube.
           </p>
         </div>
 
-        <div className="card" style={{ padding: '20px', borderRadius: '14px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#10b981', marginBottom: '8px' }}>
+        <div className="card" style={{ padding: '20px', borderRadius: '16px', background: 'rgba(18, 32, 45, 0.65)', border: '1px solid var(--border-color)' }}>
+          <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#34d399', marginBottom: '8px' }}>
             🏋️ ¿Qué significa el puntaje de "Calidad Postural 0 - 100%"?
           </h4>
           <p style={{ fontSize: '0.88rem', color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>
-            Es una calificación instantánea que compara tus ángulos de rodilla, cadera, espalda y brazos con el modelo ideal de ejecución de deportistas profesionales del dataset Penn Action. Un puntaje superior al 85% indica una técnica segura y libre de riesgo de lesiones.
+            Es una calificación instantánea que compara tus ángulos de rodilla, cadera, espalda y brazos con la armonía ideal del dataset Penn Action y nuestros modelos Ghibli AI. Un puntaje superior al 85% indica una técnica limpia y óptima.
           </p>
         </div>
 

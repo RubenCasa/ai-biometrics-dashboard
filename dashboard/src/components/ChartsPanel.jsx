@@ -66,10 +66,10 @@ export default function ChartsPanel({ seq }) {
 
   const chartColor =
     seq.clase === 0
-      ? '#10b981'
+      ? '#34d399'
       : seq.clase === 1
-      ? '#ef4444'
-      : '#f59e0b';
+      ? '#fbbf24'
+      : '#f87171';
 
   const commonOptions = {
     responsive: true,
@@ -77,11 +77,11 @@ export default function ChartsPanel({ seq }) {
     scales: {
       x: {
         grid: { color: 'rgba(255,255,255,0.06)' },
-        ticks: { color: '#9ca3af', font: { family: 'JetBrains Mono', size: 10 } }
+        ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
       },
       y: {
         grid: { color: 'rgba(255,255,255,0.06)' },
-        ticks: { color: '#9ca3af', font: { family: 'JetBrains Mono', size: 10 } }
+        ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
       }
     },
     plugins: {
@@ -95,7 +95,7 @@ export default function ChartsPanel({ seq }) {
       {
         data: trunkData,
         borderColor: chartColor,
-        backgroundColor: 'rgba(16, 185, 129, 0.12)',
+        backgroundColor: 'rgba(52, 211, 153, 0.14)',
         borderWidth: 2.5,
         pointRadius: 0,
         fill: true,
@@ -110,7 +110,7 @@ export default function ChartsPanel({ seq }) {
       {
         data: depthData,
         borderColor: '#38bdf8',
-        backgroundColor: 'rgba(56, 189, 248, 0.12)',
+        backgroundColor: 'rgba(56, 189, 248, 0.14)',
         borderWidth: 2.5,
         pointRadius: 0,
         fill: true,
@@ -124,8 +124,8 @@ export default function ChartsPanel({ seq }) {
     datasets: [
       {
         data: angleData,
-        borderColor: '#a855f7',
-        backgroundColor: 'rgba(168, 85, 247, 0.12)',
+        borderColor: '#c084fc',
+        backgroundColor: 'rgba(192, 132, 252, 0.14)',
         borderWidth: 2.5,
         pointRadius: 0,
         fill: true,
@@ -136,14 +136,15 @@ export default function ChartsPanel({ seq }) {
 
   // Exportar datos a CSV
   const exportToCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,Frame,Trunk_Inclination,Hip_Depth_Y,Joint_Angle\n";
-    labels.forEach((frame, idx) => {
-      csvContent += `${frame},${trunkData[idx]},${depthData[idx]},${angleData[idx]}\n`;
-    });
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `biomechanics_report_${seq.id || 'live'}.csv`);
+    let csv = "Frame,TrunkTilt,HipDepthY,EstimatedAngle\n";
+    for (let i = 0; i < labels.length; i++) {
+      csv += `${labels[i]},${trunkData[i]},${depthData[i]},${angleData[i]}\n`;
+    }
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `ghibli_biometrics_${seq.id || 'live'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -151,7 +152,7 @@ export default function ChartsPanel({ seq }) {
 
   return (
     <div className="charts-container" style={{ marginTop: '24px' }}>
-      {/* Selector de Pestañas del Panel Biomecánico */}
+      {/* Selector de Pestañas del Studio Biomecánico */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -159,10 +160,10 @@ export default function ChartsPanel({ seq }) {
         flexWrap: 'wrap',
         gap: '12px',
         marginBottom: '16px',
-        background: 'rgba(15, 23, 42, 0.65)',
+        background: 'rgba(18, 32, 45, 0.72)',
         padding: '12px 18px',
         borderRadius: '16px',
-        border: '1px solid rgba(255, 255, 255, 0.08)'
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
@@ -179,15 +180,15 @@ export default function ChartsPanel({ seq }) {
               transition: 'all 0.2s ease'
             }}
           >
-            📈 Cinemática Tronco & Cadera
+            🍃 Cinemática Tronco & Cadera
           </button>
           <button
             onClick={() => setChartTab('angles')}
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
-              border: chartTab === 'angles' ? '1px solid #a855f7' : '1px solid transparent',
-              background: chartTab === 'angles' ? 'rgba(168, 85, 247, 0.2)' : 'transparent',
+              border: chartTab === 'angles' ? '1px solid #c084fc' : '1px solid transparent',
+              background: chartTab === 'angles' ? 'rgba(192, 132, 252, 0.2)' : 'transparent',
               color: chartTab === 'angles' ? '#ffffff' : '#94a3b8',
               fontSize: '0.85rem',
               fontWeight: 700,
@@ -195,15 +196,15 @@ export default function ChartsPanel({ seq }) {
               transition: 'all 0.2s ease'
             }}
           >
-            🦵 Ángulo de Flexión en Vivo
+            ☁️ Ángulo de Flexión en Vivo
           </button>
           <button
             onClick={() => setChartTab('summary')}
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
-              border: chartTab === 'summary' ? '1px solid #10b981' : '1px solid transparent',
-              background: chartTab === 'summary' ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+              border: chartTab === 'summary' ? '1px solid #34d399' : '1px solid transparent',
+              background: chartTab === 'summary' ? 'rgba(52, 211, 153, 0.2)' : 'transparent',
               color: chartTab === 'summary' ? '#ffffff' : '#94a3b8',
               fontSize: '0.85rem',
               fontWeight: 700,
@@ -211,7 +212,7 @@ export default function ChartsPanel({ seq }) {
               transition: 'all 0.2s ease'
             }}
           >
-            📋 Resumen Estadístico & Exportación
+            🌲 Resumen Estadístico & Exportación
           </button>
         </div>
 

@@ -52,25 +52,26 @@ export default function DatasetView({ onSelectDatasetItem }) {
 
       {/* Lista de Casos de Benchmark Penn Action */}
       <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '16px' }}>
-        📋 Casos de Prueba del Dataset Penn Action (Ground-Truth)
+        🌲 Casos de Prueba del Dataset Ghibli AI (Ground-Truth)
       </h3>
       <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)', marginBottom: '20px' }}>
-        Haz clic en cualquiera de las 5 secuencias de referencia históricas para visualizar los fotogramas anotados y las gráficas cinemáticas de los ángulos y la posición del centro de gravedad:
+        Haz clic en cualquiera de las 5 secuencias de referencia históricas para visualizar los fotogramas del bosque y las gráficas cinemáticas en el Studio:
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
         {INITIAL_SEQUENCES.map((seq, idx) => {
-          const statusColor = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
-          const badgeText = seq.clase === 0 ? 'CLASE 0 - CORRECTO' : `CLASE ${seq.clase} - ERROR DETECTADO`;
+          const statusColor = seq.clase === 0 ? '#34d399' : seq.clase === 1 ? '#fbbf24' : '#f87171';
+          const badgeText = seq.clase === 0 ? 'CLASE 0 - ARMONÍA ÓPTIMA' : `CLASE ${seq.clase} - ALERTA ARTICULAR`;
 
           return (
             <div
               key={seq.id}
               className="card"
               style={{
-                borderRadius: '16px',
-                padding: '22px',
-                background: 'rgba(15, 23, 42, 0.75)',
+                borderRadius: '18px',
+                padding: '24px',
+                background: 'rgba(18, 32, 45, 0.78)',
+                backdropFilter: 'blur(20px)',
                 border: `1px solid ${statusColor}40`,
                 display: 'flex',
                 flexDirection: 'column',
@@ -79,23 +80,23 @@ export default function DatasetView({ onSelectDatasetItem }) {
             >
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.15)', padding: '4px 12px', borderRadius: '9999px' }}>
                     #{seq.id} — {seq.action}
                   </span>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: statusColor, background: `${statusColor}15`, padding: '4px 10px', borderRadius: '12px', border: `1px solid ${statusColor}40` }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: statusColor, background: `${statusColor}18`, padding: '4px 12px', borderRadius: '9999px', border: `1px solid ${statusColor}40` }}>
                     {badgeText}
                   </span>
                 </div>
 
-                <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>
+                <h4 style={{ fontSize: '1.18rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>
                   {seq.nombre}
                 </h4>
 
-                <p style={{ fontSize: '0.85rem', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '18px' }}>
+                <p style={{ fontSize: '0.86rem', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '18px' }}>
                   {seq.feedback}
                 </p>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-dim)', background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: '10px', marginBottom: '18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-dim)', background: 'rgba(11, 19, 28, 0.65)', padding: '10px 16px', borderRadius: '12px', marginBottom: '18px', border: '1px solid var(--border-color)' }}>
                   <span><b>Fotogramas:</b> {seq.framesCount} frames</span>
                   <span><b>Confianza:</b> {(seq.confianza * 100).toFixed(1)}%</span>
                 </div>
@@ -106,17 +107,17 @@ export default function DatasetView({ onSelectDatasetItem }) {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: '9999px',
                   border: `1px solid ${statusColor}`,
                   background: 'transparent',
                   color: statusColor,
-                  fontSize: '0.88rem',
-                  fontWeight: 700,
+                  fontSize: '0.86rem',
+                  fontWeight: 800,
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.25s ease'
                 }}
               >
-                🔬 ANALIZAR CURVAS EN EL ESTUDIO
+                🍃 ANALIZAR CURVAS EN EL STUDIO
               </button>
             </div>
           );
