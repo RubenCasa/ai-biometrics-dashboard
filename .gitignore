@@ -17,6 +17,7 @@ Penn_Action/
 *.mp4
 !dashboard/public/*.mp4
 real_data.js
+!dashboard/public/real_data.js
 
 # OS files
 .DS_Store

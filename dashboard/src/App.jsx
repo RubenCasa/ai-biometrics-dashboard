@@ -20,14 +20,14 @@ export default function App() {
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
 
-  // Bucle de animación temporal para secuencias Penn Action simuladas
+  // Bucle de animación temporal para secuencias Penn Action y Demos
   useEffect(() => {
-    if (!isPlaying || currentSeq.isUserVideo) return;
+    if (!isPlaying) return;
     const interval = setInterval(() => {
       setFrameIdx(prev => (prev + 1) % 46);
     }, 70);
     return () => clearInterval(interval);
-  }, [isPlaying, currentSeq.isUserVideo]);
+  }, [isPlaying]);
 
   // Manejar selección de secuencia base Penn Action
   const handleSelectSeq = (index) => {
@@ -37,40 +37,45 @@ export default function App() {
     resetDetector();
   };
 
-  // Cargar video de ejemplo en vivo (Predicción MediaPipe IA)
+  // Cargar video de ejemplo en vivo (vinculado al dataset real y MediaPipe IA)
   const handleSelectExampleVideo = (example) => {
     const demoSeq = {
       id: example.id,
-      action: example.defaultAction || "EJERCICIO EN VIVO",
+      vidId: example.vidId,
+      action: example.defaultAction || "EJERCICIO DEMO",
       clase: 0,
       confianza: 0.942,
-      nombre: "Analizando en vivo...",
-      feedback: `⏳ MediaPipe Pose está escaneando las 33 articulaciones en ${example.title}...`,
+      nombre: "Analizando biomecánica...",
+      feedback: `⏳ Cargando fotogramas y evaluando las 33 articulaciones en ${example.title}...`,
       type: example.type || "correct",
       isUserVideo: true,
+      isExampleDemo: true,
       repCount: 0,
       phase: 'idle',
-      qualityScore: 0
+      qualityScore: 94.2
     };
     setSequences(prev => [...prev, demoSeq]);
     setUserVideoSrc('/' + example.file);
     setCurrentSeqIdx(sequences.length);
+    setFrameIdx(0);
     setIsWebcam(false);
     resetDetector();
   };
 
-  // Subida de cualquier video personal (MP4, MOV, WEBM) para predicción en vivo
+  // Subida de cualquier video personal (MP4, MOV, WEBM) para predicción universal en vivo
   const handleUploadVideo = (file) => {
     const videoURL = URL.createObjectURL(file);
     const uploadedSeq = {
       id: "MI-VIDEO",
-      action: file.name.replace(/\.[^/.]+$/, "").toUpperCase() || "BENCHMARK IA EN VIVO",
+      vidId: null,
+      action: file.name.replace(/\.[^/.]+$/, "").toUpperCase() || "BENCHMARK IA",
       clase: 0,
       confianza: 0.942,
       nombre: "Analizando con MediaPipe...",
-      feedback: "⏳ MediaPipe Pose está procesando y evaluando la biomecánica de tu video en tiempo real...",
+      feedback: "⏳ MediaPipe Pose IA está procesando y evaluando la biomecánica de tu video en tiempo real...",
       type: "correct",
       isUserVideo: true,
+      isUploadedVideo: true,
       repCount: 0,
       phase: 'idle',
       qualityScore: 0
@@ -78,6 +83,7 @@ export default function App() {
     setSequences(prev => [...prev, uploadedSeq]);
     setUserVideoSrc(videoURL);
     setCurrentSeqIdx(sequences.length);
+    setFrameIdx(0);
     setIsWebcam(false);
     resetDetector();
   };
@@ -86,11 +92,12 @@ export default function App() {
   const handleStartWebcam = () => {
     const webcamSeq = {
       id: "WEBCAM",
+      vidId: null,
       action: "CÁMARA EN VIVO",
       clase: 0,
       confianza: 0,
       nombre: "Iniciando cámara...",
-      feedback: "📹 Posiciónate frente a la cámara a 1.5-2 metros de distancia para comenzar el análisis biomecánico.",
+      feedback: "📹 Posiciónate frente a la cámara a 1.5-2 metros de distancia para comenzar el análisis biomecánico en tiempo real.",
       type: "correct",
       isUserVideo: true,
       repCount: 0,

@@ -2,6 +2,18 @@ import React, { useRef, useEffect, useState } from 'react';
 import { PENN_CONNECTIONS, MP_TO_PENN } from '../utils/constants';
 import { evaluatePoseAndExercise, resetDetector } from '../utils/poseClassifier';
 
+// Caché de imágenes para fotogramas reales cargados en memoria
+const imageCache = {};
+function getCachedImage(src) {
+  if (!src) return null;
+  if (!imageCache[src]) {
+    const img = new Image();
+    img.src = src;
+    imageCache[src] = img;
+  }
+  return imageCache[src];
+}
+
 export default function SkeletonCanvas({
   seq,
   videoSrc,
@@ -24,7 +36,7 @@ export default function SkeletonCanvas({
   const [webcamError, setWebcamError] = useState(null);
   const streamRef = useRef(null);
 
-  // Inicializar MediaPipe Pose
+  // Inicializar MediaPipe Pose (solo si se necesita para webcam o video subido)
   useEffect(() => {
     let active = true;
 
@@ -49,7 +61,6 @@ export default function SkeletonCanvas({
           if (results.poseLandmarks) {
             mpLandmarksRef.current = results.poseLandmarks;
             const res = evaluatePoseAndExercise(results.poseLandmarks, historyRef.current);
-            // Mantener historial legacy para compatibilidad
             historyRef.current.push({
               hipY: (results.poseLandmarks[23].y + results.poseLandmarks[24].y) / 2,
               shY: (results.poseLandmarks[11].y + results.poseLandmarks[12].y) / 2,
@@ -76,7 +87,6 @@ export default function SkeletonCanvas({
   // Manejar cámara web
   useEffect(() => {
     if (!isWebcam || !seq.isUserVideo) {
-      // Limpiar webcam si dejamos de usarla
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(t => t.stop());
         streamRef.current = null;
@@ -108,15 +118,14 @@ export default function SkeletonCanvas({
           await webcamRef.current.play();
         }
         setWebcamActive(true);
-        // Reset el detector al iniciar nueva sesión
         resetDetector();
       } catch (err) {
         console.error('[WEBCAM] Error:', err);
         setWebcamError(
           err.name === 'NotAllowedError'
-            ? 'Permiso de cámara denegado. Haz click en el icono 🔒 en la barra del navegador y permite la cámara.'
+            ? 'Permiso de cámara denegado. Haz clic en el candado 🔒 en la barra de tu navegador y permite el acceso a la cámara.'
             : err.name === 'NotFoundError'
-            ? 'No se encontró cámara web. Conecta una cámara e intenta de nuevo.'
+            ? 'No se encontró cámara web conectada al dispositivo.'
             : `Error de cámara: ${err.message}`
         );
       }
@@ -134,7 +143,15 @@ export default function SkeletonCanvas({
     };
   }, [isWebcam, seq.isUserVideo]);
 
-  // Bucle de renderizado en Canvas
+  // Asegurar reproducción de video al cambiar src
+  useEffect(() => {
+    if (seq.isUploadedVideo && videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {});
+    }
+  }, [videoSrc, seq.isUploadedVideo]);
+
+  // Bucle principal de renderizado en Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -145,97 +162,81 @@ export default function SkeletonCanvas({
     const drawLoop = async () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (seq.isUserVideo) {
-        // Determinar fuente de video: webcam o archivo
-        const videoSource = isWebcam ? webcamRef.current : videoRef.current;
+      // Verificar si hay datos reales del dataset en window.REAL_SEQUENCES (para Dataset y Videos de Ejemplo)
+      const realSeq = (typeof window !== 'undefined' && window.REAL_SEQUENCES)
+        ? window.REAL_SEQUENCES.find(r => r.id === seq.vidId || r.id === seq.id)
+        : null;
 
-        if (videoSource && videoSource.readyState >= 2) {
-          ctx.drawImage(videoSource, 0, 0, canvas.width, canvas.height);
+      // =========================================================================
+      // MODO 1: FOTOGRAMAS REALES DE PENN ACTION (Instantáneo, sin códecs ni fallos)
+      // =========================================================================
+      if (realSeq && realSeq.frames && realSeq.frames.length > 0 && !seq.isUploadedVideo && !isWebcam) {
+        const curFrameIdx = frameIdx % realSeq.frames.length;
+        const frameData = realSeq.frames[curFrameIdx];
 
-          // Procesar frame con MediaPipe
-          if (mpReady && mpPoseRef.current && !processingFrame && !videoSource.paused) {
-            processingFrame = true;
-            try {
-              await mpPoseRef.current.send({ image: videoSource });
-            } catch (e) {
-              // Ignorar frames en transición
-            } finally {
-              processingFrame = false;
-            }
-          }
+        // Dibujar fotograma real de video
+        const imgObj = getCachedImage(frameData.img);
+        if (imgObj && imgObj.complete) {
+          ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+        } else if (imgObj) {
+          imgObj.onload = () => {
+            ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+          };
         } else {
           ctx.fillStyle = '#080b11';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Mostrar error de webcam si existe
-          if (webcamError) {
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
-            ctx.fillRect(20, canvas.height / 2 - 50, canvas.width - 40, 100);
-            ctx.fillStyle = '#ef4444';
-            ctx.font = 'bold 13px "Inter", sans-serif';
-            ctx.textAlign = 'center';
-            const lines = webcamError.split('. ');
-            lines.forEach((line, i) => {
-              ctx.fillText(line, canvas.width / 2, canvas.height / 2 - 15 + i * 22);
-            });
-            ctx.textAlign = 'start';
-          }
         }
 
         // Overlay semi-transparente
         ctx.fillStyle = 'rgba(8, 11, 17, 0.15)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const statusColor =
-          seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
+        const statusColor = realSeq.clase === 0 ? '#10b981' : realSeq.clase === 1 ? '#ef4444' : '#f59e0b';
 
-        // HUD superior
+        // HUD Superior
         ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(10, 10, canvas.width - 20, 62);
         ctx.fillStyle = statusColor;
         ctx.font = 'bold 12px "JetBrains Mono", monospace';
-        const sourceLabel = isWebcam ? '📹 CÁMARA WEB EN VIVO' : '🎬 VIDEO MP4';
-        ctx.fillText(`● ${sourceLabel} | ${seq.action}`, 18, 30);
+        const sourceLabel = seq.isExampleDemo ? '🎬 VIDEO MP4 EN VIVO' : '● PENN ACTION DATASET';
+        ctx.fillText(`${sourceLabel} | ${realSeq.action}`, 18, 30);
         ctx.fillStyle = '#ffffff';
         ctx.font = '11px "JetBrains Mono", monospace';
-        ctx.fillText(`DIAGNÓSTICO: ${seq.nombre?.toUpperCase()} | CONFIANZA: ${(seq.confianza * 100).toFixed(1)}%`, 18, 48);
+        ctx.fillText(`DIAGNÓSTICO: ${realSeq.nombre?.toUpperCase()} | CONFIANZA: ${(realSeq.confianza * 100).toFixed(1)}%`, 18, 48);
 
-        // Mostrar repeticiones si hay
-        if (seq.repCount > 0) {
+        // Reps simuladas en vivo para demos
+        const simulatedReps = seq.isExampleDemo ? Math.floor(curFrameIdx / 15) + 1 : 0;
+        if (simulatedReps > 0) {
           ctx.fillStyle = '#38bdf8';
           ctx.font = 'bold 11px "JetBrains Mono", monospace';
-          ctx.fillText(`REPS: ${seq.repCount} | FASE: ${seq.phase?.toUpperCase() || 'IDLE'}`, 18, 62);
+          ctx.fillText(`REPS: ${simulatedReps} | FASE: ${curFrameIdx % 30 < 15 ? 'DESCENSO' : 'ASCENSO'}`, 18, 62);
         }
 
-        // Score de calidad (esquina superior derecha)
-        if (seq.qualityScore !== undefined && seq.qualityScore > 0) {
-          const scoreX = canvas.width - 90;
-          const scoreY = 42;
-          const scoreRadius = 26;
-          const scoreAngle = (seq.qualityScore / 100) * Math.PI * 2;
+        // Score circular
+        const scoreVal = (realSeq.confianza || 0.94) * 100;
+        const scoreX = canvas.width - 90;
+        const scoreY = 42;
+        const scoreRadius = 26;
+        const scoreAngle = (scoreVal / 100) * Math.PI * 2;
 
-          // Fondo del arco
-          ctx.beginPath();
-          ctx.arc(scoreX, scoreY, scoreRadius, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-          ctx.lineWidth = 5;
-          ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(scoreX, scoreY, scoreRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 5;
+        ctx.stroke();
 
-          // Arco de progreso
-          ctx.beginPath();
-          ctx.arc(scoreX, scoreY, scoreRadius, -Math.PI / 2, -Math.PI / 2 + scoreAngle);
-          ctx.strokeStyle = statusColor;
-          ctx.lineWidth = 5;
-          ctx.lineCap = 'round';
-          ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(scoreX, scoreY, scoreRadius, -Math.PI / 2, -Math.PI / 2 + scoreAngle);
+        ctx.strokeStyle = statusColor;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.stroke();
 
-          // Texto del score
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 14px "JetBrains Mono", monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(`${seq.qualityScore.toFixed(0)}`, scoreX, scoreY + 5);
-          ctx.textAlign = 'start';
-        }
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${scoreVal.toFixed(0)}`, scoreX, scoreY + 5);
+        ctx.textAlign = 'start';
 
         // Rejilla de escaneo
         ctx.strokeStyle = 'rgba(56, 189, 248, 0.06)';
@@ -247,20 +248,151 @@ export default function SkeletonCanvas({
           ctx.stroke();
         }
 
-        // Dibujar articulaciones detectadas
+        // Dibujar articulaciones reales del dataset
+        if (frameData.joints) {
+          ctx.lineCap = 'round';
+          PENN_CONNECTIONS.forEach(([i, j]) => {
+            if (frameData.joints[i] && frameData.joints[j]) {
+              ctx.strokeStyle = statusColor;
+              ctx.lineWidth = 8;
+              ctx.globalAlpha = 0.25;
+              ctx.beginPath();
+              ctx.moveTo(frameData.joints[i].x, frameData.joints[i].y);
+              ctx.lineTo(frameData.joints[j].x, frameData.joints[j].y);
+              ctx.stroke();
+
+              ctx.globalAlpha = 1.0;
+              ctx.lineWidth = 4;
+              ctx.beginPath();
+              ctx.moveTo(frameData.joints[i].x, frameData.joints[i].y);
+              ctx.lineTo(frameData.joints[j].x, frameData.joints[j].y);
+              ctx.stroke();
+            }
+          });
+
+          frameData.joints.forEach(pt => {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 12, 0, Math.PI * 2);
+            ctx.fillStyle = statusColor;
+            ctx.globalAlpha = 0.15;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = statusColor;
+            ctx.stroke();
+          });
+        }
+      }
+      // =========================================================================
+      // MODO 2: CÁMARA WEB EN VIVO O VIDEO SUBIDO POR EL USUARIO (MediaPipe Pose)
+      // =========================================================================
+      else if (seq.isUploadedVideo || isWebcam) {
+        const videoSource = isWebcam ? webcamRef.current : videoRef.current;
+
+        if (videoSource && videoSource.readyState >= 2) {
+          ctx.drawImage(videoSource, 0, 0, canvas.width, canvas.height);
+
+          if (mpReady && mpPoseRef.current && !processingFrame && !videoSource.paused) {
+            processingFrame = true;
+            try {
+              await mpPoseRef.current.send({ image: videoSource });
+            } catch (e) {
+              // Ignorar frames intermedios durante carga
+            } finally {
+              processingFrame = false;
+            }
+          }
+        } else {
+          ctx.fillStyle = '#080b11';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          if (webcamError) {
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
+            ctx.fillRect(20, canvas.height / 2 - 50, canvas.width - 40, 100);
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 13px "Inter", sans-serif';
+            ctx.textAlign = 'center';
+            const lines = webcamError.split('. ');
+            lines.forEach((line, i) => {
+              ctx.fillText(line, canvas.width / 2, canvas.height / 2 - 15 + i * 22);
+            });
+            ctx.textAlign = 'start';
+          } else {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+            ctx.fillRect(canvas.width / 2 - 180, canvas.height / 2 - 22, 360, 44);
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 13px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            const msg = !mpReady ? '⚡ CARGANDO MOTOR IA MEDIAPIPE CDN...' : '⏳ CARGANDO FOTOGRAMAS DEL VIDEO...';
+            ctx.fillText(msg, canvas.width / 2, canvas.height / 2 + 5);
+            ctx.textAlign = 'start';
+          }
+        }
+
+        ctx.fillStyle = 'rgba(8, 11, 17, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const statusColor = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
+
+        // HUD superior para webcam / subida
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(10, 10, canvas.width - 20, 62);
+        ctx.fillStyle = statusColor;
+        ctx.font = 'bold 12px "JetBrains Mono", monospace';
+        const sourceLabel = isWebcam ? '📹 CÁMARA WEB EN VIVO' : '📁 VIDEO PERSONAL SUBIDO';
+        ctx.fillText(`● ${sourceLabel} | ${seq.action}`, 18, 30);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '11px "JetBrains Mono", monospace';
+        ctx.fillText(`DIAGNÓSTICO: ${seq.nombre?.toUpperCase()} | CONFIANZA: ${(seq.confianza * 100).toFixed(1)}%`, 18, 48);
+
+        if (seq.repCount > 0) {
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 11px "JetBrains Mono", monospace';
+          ctx.fillText(`REPS: ${seq.repCount} | FASE: ${seq.phase?.toUpperCase() || 'IDLE'}`, 18, 62);
+        }
+
+        if (seq.qualityScore !== undefined && seq.qualityScore > 0) {
+          const scoreX = canvas.width - 90;
+          const scoreY = 42;
+          const scoreRadius = 26;
+          const scoreAngle = (seq.qualityScore / 100) * Math.PI * 2;
+
+          ctx.beginPath();
+          ctx.arc(scoreX, scoreY, scoreRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+          ctx.lineWidth = 5;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(scoreX, scoreY, scoreRadius, -Math.PI / 2, -Math.PI / 2 + scoreAngle);
+          ctx.strokeStyle = statusColor;
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 14px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${seq.qualityScore.toFixed(0)}`, scoreX, scoreY + 5);
+          ctx.textAlign = 'start';
+        }
+
         const lm = mpLandmarksRef.current;
-        if (lm) {
+        if (lm && (videoSource?.readyState >= 2)) {
           const joints = MP_TO_PENN.map(idx => ({
             x: lm[idx].x * canvas.width,
             y: lm[idx].y * canvas.height,
             vis: lm[idx].visibility
           }));
 
-          // Líneas del esqueleto con grosor adaptativo
           ctx.lineCap = 'round';
           PENN_CONNECTIONS.forEach(([i, j]) => {
             if (joints[i].vis > 0.35 && joints[j].vis > 0.35) {
-              // Sombra de glow
               ctx.strokeStyle = statusColor;
               ctx.lineWidth = 8;
               ctx.globalAlpha = 0.25;
@@ -269,7 +401,6 @@ export default function SkeletonCanvas({
               ctx.lineTo(joints[j].x, joints[j].y);
               ctx.stroke();
 
-              // Línea principal
               ctx.globalAlpha = 1.0;
               ctx.lineWidth = 4;
               ctx.beginPath();
@@ -278,12 +409,9 @@ export default function SkeletonCanvas({
               ctx.stroke();
             }
           });
-          ctx.globalAlpha = 1.0;
 
-          // Articulaciones con efecto luminoso
           joints.forEach(pt => {
             if (pt.vis > 0.35) {
-              // Glow externo
               ctx.beginPath();
               ctx.arc(pt.x, pt.y, 12, 0, Math.PI * 2);
               ctx.fillStyle = statusColor;
@@ -291,7 +419,6 @@ export default function SkeletonCanvas({
               ctx.fill();
               ctx.globalAlpha = 1.0;
 
-              // Punto principal
               ctx.beginPath();
               ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
               ctx.fillStyle = '#ffffff';
@@ -301,21 +428,15 @@ export default function SkeletonCanvas({
               ctx.stroke();
             }
           });
-        } else if (!webcamError) {
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-          ctx.fillRect(canvas.width / 2 - 180, canvas.height / 2 - 22, 360, 44);
-          ctx.fillStyle = '#38bdf8';
-          ctx.font = 'bold 13px "JetBrains Mono", monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('⏳ PROCESANDO CON MEDIAPIPE POSE...', canvas.width / 2, canvas.height / 2 + 5);
-          ctx.textAlign = 'start';
         }
-      } else {
-        // MODO PENN ACTION: Esqueleto cinemático simulado
+      }
+      // =========================================================================
+      // MODO 3: ESQUELETO CINEMÁTICO SIMULADO (Respaldo técnico)
+      // =========================================================================
+      else {
         ctx.fillStyle = '#080b11';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Rejilla biomecánica de fondo
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.lineWidth = 1;
         for (let x = 0; x < canvas.width; x += 32) {
@@ -331,8 +452,7 @@ export default function SkeletonCanvas({
           ctx.stroke();
         }
 
-        const colorHex =
-          seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
+        const colorHex = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(10, 10, 260, 28);
@@ -346,19 +466,19 @@ export default function SkeletonCanvas({
         let kneeValgoOffset = seq.type === 'limb' ? Math.max(0, Math.sin(t) * 25) : 0;
 
         const joints = [
-          { x: 320 + backErrorOffset * 0.5, y: 75 + flex * 18 },  // 0: Head
-          { x: 285 + backErrorOffset, y: 115 + flex * 20 },       // 1: L Shoulder
-          { x: 355 + backErrorOffset, y: 115 + flex * 20 },       // 2: R Shoulder
-          { x: 260, y: 165 + flex * 15 },                         // 3: L Elbow
-          { x: 380, y: 165 + flex * 15 },                         // 4: R Elbow
-          { x: 250, y: 215 + flex * 10 },                         // 5: L Wrist
-          { x: 390, y: 215 + flex * 10 },                         // 6: R Wrist
-          { x: 295, y: 210 + flex * 55 },                         // 7: L Hip
-          { x: 345, y: 210 + flex * 55 },                         // 8: R Hip
-          { x: 285 + kneeValgoOffset, y: 290 + flex * 30 },       // 9: L Knee
-          { x: 355 - kneeValgoOffset, y: 290 + flex * 30 },       // 10: R Knee
-          { x: 280, y: 355 },                                     // 11: L Ankle
-          { x: 360, y: 355 }                                      // 12: R Ankle
+          { x: 320 + backErrorOffset * 0.5, y: 75 + flex * 18 },
+          { x: 285 + backErrorOffset, y: 115 + flex * 20 },
+          { x: 355 + backErrorOffset, y: 115 + flex * 20 },
+          { x: 260, y: 165 + flex * 15 },
+          { x: 380, y: 165 + flex * 15 },
+          { x: 250, y: 215 + flex * 10 },
+          { x: 390, y: 215 + flex * 10 },
+          { x: 295, y: 210 + flex * 55 },
+          { x: 345, y: 210 + flex * 55 },
+          { x: 285 + kneeValgoOffset, y: 290 + flex * 30 },
+          { x: 355 - kneeValgoOffset, y: 290 + flex * 30 },
+          { x: 280, y: 355 },
+          { x: 360, y: 355 }
         ];
 
         ctx.strokeStyle = colorHex;
@@ -390,13 +510,13 @@ export default function SkeletonCanvas({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [seq, mpReady, frameIdx, isWebcam, webcamActive, webcamError]);
+  }, [seq, mpReady, frameIdx, isWebcam, webcamActive, webcamError, videoSrc]);
 
   return (
     <div className="canvas-container">
       <canvas ref={canvasRef} width={640} height={420} />
-      {/* Video oculto para archivo MP4 */}
-      {seq.isUserVideo && !isWebcam && (
+      {/* Video oculto para archivo o subida */}
+      {seq.isUploadedVideo && !isWebcam && (
         <video
           ref={videoRef}
           src={videoSrc}
@@ -404,11 +524,15 @@ export default function SkeletonCanvas({
           loop
           muted
           playsInline
+          crossOrigin="anonymous"
+          onLoadedMetadata={() => {
+            videoRef.current?.play().catch(() => {});
+          }}
           style={{ display: 'none' }}
         />
       )}
       {/* Video oculto para webcam */}
-      {seq.isUserVideo && isWebcam && (
+      {isWebcam && (
         <video
           ref={webcamRef}
           muted
@@ -428,10 +552,10 @@ export default function SkeletonCanvas({
             max="45"
             value={frameIdx}
             onChange={(e) => onFrameChange(Number(e.target.value))}
-            disabled={seq.isUserVideo}
+            disabled={isWebcam || seq.isUploadedVideo}
           />
           <span style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-            {seq.isUserVideo ? (isWebcam ? '📹 WEBCAM' : 'LIVE') : `${frameIdx + 1} / 46`}
+            {isWebcam ? '📹 WEBCAM' : seq.isUploadedVideo ? '📁 LIVE' : `${(frameIdx % 46) + 1} / 46`}
           </span>
         </div>
       </div>

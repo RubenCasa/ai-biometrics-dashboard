@@ -3,8 +3,8 @@
 exportar_real_data.py
 ---------------------
 Extrae fotogramas REALES y coordenadas REALES (x, y) de las articulaciones
-de la base de datos Penn Action Dataset para mostrarlos en el Dashboard HTML5.
-Genera 'real_data.js' listo para ser consumido por dashboard.html.
+de la base de datos Penn Action Dataset para mostrarlos en el Dashboard HTML5 y React.
+Genera 'dashboard/public/real_data.js' listo para ser consumido.
 """
 
 import os
@@ -19,7 +19,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LABELS_DIR = os.path.join(BASE_DIR, "Penn_Action", "labels")
 FRAMES_DIR = os.path.join(BASE_DIR, "Penn_Action", "frames")
 
-# Seleccionamos 5 videos reales de la base de datos que representan sentadillas, flexiones y abdominales
 TARGET_VIDEOS = [
     {
         "id": "1659",
@@ -76,8 +75,8 @@ def export_real_sequences():
             continue
 
         mat = sio.loadmat(mat_path)
-        x_coords = mat['x'].astype(np.float32)  # (nframes, 13)
-        y_coords = mat['y'].astype(np.float32)  # (nframes, 13)
+        x_coords = mat['x'].astype(np.float32)
+        y_coords = mat['y'].astype(np.float32)
         
         act_raw = mat.get('action', 'squat')
         if isinstance(act_raw, np.ndarray) and act_raw.size > 0:
@@ -88,7 +87,6 @@ def export_real_sequences():
         img_files = sorted(glob.glob(os.path.join(frames_folder, "*.jpg")))
         nframes = min(len(img_files), x_coords.shape[0])
 
-        # Submuestrear o tomar hasta 46 frames representativos
         indices = np.linspace(0, nframes - 1, min(46, nframes)).astype(int)
 
         frames_data = []
@@ -99,19 +97,14 @@ def export_real_sequences():
                 continue
 
             orig_h, orig_w = img.shape[:2]
-
-            # Redimensionar la imagen para que encaje perfectamente en el canvas (640x380)
             canvas_w, canvas_h = 640, 380
-            # Calcular factor de escala para centrar imagen
             scale_x = canvas_w / orig_w
             scale_y = canvas_h / orig_h
 
-            # Redimensionar imagen en calidad JPEG optimizada
             img_resized = cv2.resize(img, (canvas_w, canvas_h), interpolation=cv2.INTER_AREA)
             _, buffer = cv2.imencode(".jpg", img_resized, [int(cv2.IMWRITE_JPEG_QUALITY), 75])
             img_b64 = "data:image/jpeg;base64," + base64.b64encode(buffer).decode("utf-8")
 
-            # Mapear coordenadas (x, y) de las 13 articulaciones a la dimensión del canvas (640x380)
             joints = []
             for j in range(13):
                 jx = float(x_coords[idx, j] * scale_x)
@@ -135,11 +128,19 @@ def export_real_sequences():
             "frames": frames_data
         })
 
-    js_content = "const REAL_SEQUENCES = " + json.dumps(sequences_output, ensure_ascii=False, indent=2) + ";\n"
-    output_js = os.path.join(BASE_DIR, "real_data.js")
+    js_content = "const REAL_SEQUENCES = " + json.dumps(sequences_output, ensure_ascii=False, indent=2) + ";\nif (typeof window !== 'undefined') { window.REAL_SEQUENCES = REAL_SEQUENCES; }\n"
+    
+    out_dir = os.path.join(BASE_DIR, "dashboard", "public")
+    os.makedirs(out_dir, exist_ok=True)
+    output_js = os.path.join(out_dir, "real_data.js")
     with open(output_js, "w", encoding="utf-8") as f:
         f.write(js_content)
-    print(f"[ÉXITO] Archivo real_data.js generado con {len(sequences_output)} secuencias reales de la base de datos Penn Action.")
+    
+    output_js_root = os.path.join(BASE_DIR, "real_data.js")
+    with open(output_js_root, "w", encoding="utf-8") as f:
+        f.write(js_content)
+        
+    print(f"[ÉXITO] Archivo real_data.js generado en public/ y root/ con {len(sequences_output)} secuencias reales.")
 
 if __name__ == "__main__":
     export_real_sequences()
