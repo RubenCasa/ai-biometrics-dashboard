@@ -25,12 +25,6 @@ export default function Sidebar({
     demo.desc.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Filtrar historial/dataset según la búsqueda
-  const filteredSequences = sequences.map((seq, origIdx) => ({ seq, origIdx })).filter(({ seq }) =>
-    String(seq.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    seq.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    seq.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="card sidebar-card" style={{
@@ -164,55 +158,6 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* HISTORIAL / BASE DE DATOS PENN ACTION */}
-      <div className="card-title" style={{ fontSize: '0.88rem', color: '#10b981', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span>📋 Dataset Penn Action & Sesiones</span>
-        <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', padding: '2px 8px', borderRadius: '10px' }}>
-          {filteredSequences.length}
-        </span>
-      </div>
-      <div className="sequence-list" style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {filteredSequences.map(({ seq, origIdx }) => {
-          const isActive = origIdx === currentSeqIdx;
-          const statusBg = seq.clase === 0 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
-          const statusBorder = seq.clase === 0 ? '#10b981' : '#ef4444';
-
-          return (
-            <div
-              key={seq.id + '-' + origIdx}
-              className={`sequence-item ${isActive ? 'active' : ''}`}
-              style={{
-                background: isActive ? 'rgba(56, 189, 248, 0.2)' : statusBg,
-                border: `1px solid ${isActive ? '#38bdf8' : statusBorder + '40'}`,
-                borderRadius: '12px',
-                padding: '12px',
-                cursor: 'pointer',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-              onClick={() => onSelectSeq(origIdx)}
-            >
-              <div>
-                <h4 style={{ color: '#ffffff', fontSize: '0.84rem', margin: '0 0 3px 0', fontWeight: 700 }}>
-                  {seq.isUserVideo ? (seq.id === 'WEBCAM' ? '📹' : '📁') : '📊'} #{seq.id} — {seq.action}
-                </h4>
-                <p style={{ fontSize: '0.72rem', color: '#cbd5e1', margin: 0 }}>{seq.nombre}</p>
-              </div>
-              <span style={{
-                fontSize: '0.68rem',
-                fontWeight: 800,
-                padding: '3px 8px',
-                borderRadius: '10px',
-                background: seq.clase === 0 ? '#10b981' : '#ef4444',
-                color: '#000'
-              }}>
-                {seq.clase === 0 ? 'OK' : `ERR ${seq.clase}`}
-              </span>
-            </div>
-          );
-        })}
-      </div>
 
       {/* Especificaciones IA */}
       <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
