@@ -47,7 +47,7 @@ export default function DemosGallery({ onSelectDemo }) {
   };
 
   return (
-    <div className="gallery-container" style={{ padding: '24px', maxWidth: '1280px', margin: '0 auto', color: '#ffffff' }}>
+    <div className="gallery-container" style={{ padding: '24px 32px', width: '100%', maxWidth: 'none', margin: '0', color: '#ffffff' }}>
       {/* Banner de bienvenida didáctico */}
       <div className="card" style={{
         background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(16, 185, 129, 0.12))',

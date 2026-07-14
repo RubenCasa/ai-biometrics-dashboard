@@ -3,7 +3,7 @@ import { INITIAL_SEQUENCES } from '../data/sequences';
 
 export default function DatasetView({ onSelectDatasetItem }) {
   return (
-    <div className="dataset-view-container" style={{ padding: '24px', maxWidth: '1280px', margin: '0 auto', color: '#ffffff' }}>
+    <div className="dataset-view-container" style={{ padding: '24px 32px', width: '100%', maxWidth: 'none', margin: '0', color: '#ffffff' }}>
       {/* Banner de Investigación Académica */}
       <div className="card" style={{
         background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(168, 85, 247, 0.12))',

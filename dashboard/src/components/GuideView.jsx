@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function GuideView({ onGoToLive }) {
   return (
-    <div className="guide-view-container" style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto', color: '#ffffff' }}>
+    <div className="guide-view-container" style={{ padding: '24px 32px', width: '100%', maxWidth: 'none', margin: '0', color: '#ffffff' }}>
       {/* Banner de Guía Fácil */}
       <div className="card" style={{
         background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(56, 189, 248, 0.12))',

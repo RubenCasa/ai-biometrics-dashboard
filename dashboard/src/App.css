@@ -39,10 +39,11 @@ body {
 /* ─── Top Navigation Bar (Athletic HUD) ───────────────────────────── */
 
 header.main-header {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 28px;
+  padding: 14px 32px;
   background: rgba(6, 9, 19, 0.92);
   backdrop-filter: blur(24px);
   border-bottom: 1px solid rgba(0, 210, 255, 0.22);
@@ -101,15 +102,16 @@ header.main-header {
 
 /* Motivational Banner & Badges */
 .motivational-banner {
+  width: calc(100% - 64px);
   background: linear-gradient(90deg, rgba(0, 255, 136, 0.15), rgba(0, 210, 255, 0.15));
   border: 1px solid rgba(0, 255, 136, 0.3);
-  padding: 10px 24px;
+  padding: 12px 28px;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin: 16px 24px 0 24px;
+  margin: 16px 32px 0 32px;
   box-shadow: 0 4px 20px rgba(0, 255, 136, 0.1);
   animation: fadeIn 0.4s ease forwards;
 }
@@ -180,11 +182,12 @@ header.main-header {
 /* ─── Dashboard Container ─────────────────────────────────────────── */
 
 .dashboard {
-  max-width: 1620px;
-  margin: 22px auto;
-  padding: 0 24px;
+  width: 100%;
+  max-width: none;
+  margin: 20px 0;
+  padding: 0 32px;
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 24px;
 }
 
