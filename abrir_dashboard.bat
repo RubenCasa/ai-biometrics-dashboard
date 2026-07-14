@@ -16,5 +16,5 @@ echo   NOTA: Deja esta ventana abierta mientras usas el Dashboard local.
 echo   Para cerrar el servidor, presiona CTRL + C o cierra esta ventana.
 echo ========================================================================
 echo.
-call npm run preview -- --port 4173 --open
+call npx vite preview --port 4173 --open
 exit
