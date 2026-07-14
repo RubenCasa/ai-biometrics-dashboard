@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Biometrics Dashboard | Corrección Postural con Inteligencia Artificial</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Dashboard de Inteligencia Artificial para corrección postural en tiempo real. Analiza tu postura en ejercicios como sentadillas, flexiones y abdominales usando cámara web o video. Gratuito y sin registro." />
+    <meta name="keywords" content="corrección postural, IA, inteligencia artificial, ejercicio, sentadilla, squat, pushup, MediaPipe, biomecánica, fitness, deep learning" />
+    <meta name="author" content="AI Biometrics Project" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph (redes sociales) -->
+    <meta property="og:title" content="AI Biometrics Dashboard - Corrección Postural con IA" />
+    <meta property="og:description" content="Analiza tu postura en tiempo real con Inteligencia Artificial. Usa tu cámara web o sube un video para recibir retroalimentación biomecánica instantánea." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-preview.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AI Biometrics Dashboard" />
+    <meta name="twitter:description" content="Corrección postural inteligente en tiempo real con IA." />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0a0d14" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Favicon (emoji-based inline SVG) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- MediaPipe Pose CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

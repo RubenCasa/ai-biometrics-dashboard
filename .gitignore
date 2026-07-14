@@ -1,0 +1,30 @@
+# Dependencias
+node_modules/
+dashboard/node_modules/
+
+# Build output
+dashboard/dist/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Dataset (muy pesado para GitHub)
+Penn_Action/
+
+# Archivos grandes
+*.mp4
+real_data.js
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDE
+.vscode/
+.idea/
+
+# Modelo entrenado (opcional, descomentar si quieres excluirlo)
+# checkpoints/modelo.pth
