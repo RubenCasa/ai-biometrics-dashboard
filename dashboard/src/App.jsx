@@ -6,7 +6,7 @@ import KpiStrip from './components/KpiStrip';
 import SkeletonCanvas from './components/SkeletonCanvas';
 import FeedbackCard from './components/FeedbackCard';
 import ChartsPanel from './components/ChartsPanel';
-import { INITIAL_SEQUENCES } from './data/sequences';
+import { INITIAL_SEQUENCES, EXAMPLE_VIDEOS } from './data/sequences';
 import { resetDetector } from './utils/poseClassifier';
 
 export default function App() {
@@ -14,13 +14,13 @@ export default function App() {
   const [currentSeqIdx, setCurrentSeqIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [frameIdx, setFrameIdx] = useState(0);
-  const [userVideoSrc, setUserVideoSrc] = useState('/video_demo.mp4');
+  const [userVideoSrc, setUserVideoSrc] = useState('/demo_squat.mp4');
   const [isWebcam, setIsWebcam] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
 
-  // Bucle de animación temporal para secuencias Penn Action
+  // Bucle de animación temporal para secuencias Penn Action simuladas
   useEffect(() => {
     if (!isPlaying || currentSeq.isUserVideo) return;
     const interval = setInterval(() => {
@@ -29,7 +29,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isPlaying, currentSeq.isUserVideo]);
 
-  // Manejar selección de secuencia Penn Action
+  // Manejar selección de secuencia base Penn Action
   const handleSelectSeq = (index) => {
     setCurrentSeqIdx(index);
     setFrameIdx(0);
@@ -37,38 +37,38 @@ export default function App() {
     resetDetector();
   };
 
-  // Cargar video demo
-  const handleLoadDemoVideo = () => {
+  // Cargar video de ejemplo en vivo (Predicción MediaPipe IA)
+  const handleSelectExampleVideo = (example) => {
     const demoSeq = {
-      id: "DEMO-MP4",
-      action: "SQUAT / PUSHUP",
+      id: example.id,
+      action: example.defaultAction || "EJERCICIO EN VIVO",
       clase: 0,
       confianza: 0.942,
-      nombre: "Analizando con MediaPipe...",
-      feedback: "⏳ MediaPipe Pose está escaneando las 33 articulaciones en tu video...",
-      type: "correct",
+      nombre: "Analizando en vivo...",
+      feedback: `⏳ MediaPipe Pose está escaneando las 33 articulaciones en ${example.title}...`,
+      type: example.type || "correct",
       isUserVideo: true,
       repCount: 0,
       phase: 'idle',
       qualityScore: 0
     };
     setSequences(prev => [...prev, demoSeq]);
-    setUserVideoSrc('/video_demo.mp4');
+    setUserVideoSrc('/' + example.file);
     setCurrentSeqIdx(sequences.length);
     setIsWebcam(false);
     resetDetector();
   };
 
-  // Subida de archivo MP4
+  // Subida de cualquier video personal (MP4, MOV, WEBM) para predicción en vivo
   const handleUploadVideo = (file) => {
     const videoURL = URL.createObjectURL(file);
     const uploadedSeq = {
-      id: "USER-MP4",
-      action: file.name.replace(/\.[^/.]+$/, "").toUpperCase() || "MI VIDEO",
+      id: "MI-VIDEO",
+      action: file.name.replace(/\.[^/.]+$/, "").toUpperCase() || "BENCHMARK IA EN VIVO",
       clase: 0,
       confianza: 0.942,
       nombre: "Analizando con MediaPipe...",
-      feedback: "⏳ MediaPipe Pose está procesando tu video...",
+      feedback: "⏳ MediaPipe Pose está procesando y evaluando la biomecánica de tu video en tiempo real...",
       type: "correct",
       isUserVideo: true,
       repCount: 0,
@@ -90,7 +90,7 @@ export default function App() {
       clase: 0,
       confianza: 0,
       nombre: "Iniciando cámara...",
-      feedback: "📹 Posiciónate frente a la cámara a 1.5-2 metros de distancia para comenzar el análisis.",
+      feedback: "📹 Posiciónate frente a la cámara a 1.5-2 metros de distancia para comenzar el análisis biomecánico.",
       type: "correct",
       isUserVideo: true,
       repCount: 0,
@@ -103,7 +103,7 @@ export default function App() {
     resetDetector();
   };
 
-  // Actualizar diagnósticos en tiempo real desde MediaPipe
+  // Actualizar diagnósticos y conteo en tiempo real desde MediaPipe Pose
   const handleLiveAssessmentUpdate = (assessment) => {
     setSequences(prev => {
       const copy = [...prev];
@@ -132,7 +132,7 @@ export default function App() {
             sequences={sequences}
             currentSeqIdx={currentSeqIdx}
             onSelectSeq={handleSelectSeq}
-            onLoadDemoVideo={handleLoadDemoVideo}
+            onSelectExampleVideo={handleSelectExampleVideo}
             onUploadVideo={handleUploadVideo}
             onStartWebcam={handleStartWebcam}
           />

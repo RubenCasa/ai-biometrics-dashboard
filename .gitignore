@@ -13,8 +13,9 @@ __pycache__/
 # Dataset (muy pesado para GitHub)
 Penn_Action/
 
-# Archivos grandes
+# Archivos grandes (excepto videos demo en public/)
 *.mp4
+!dashboard/public/*.mp4
 real_data.js
 
 # OS files

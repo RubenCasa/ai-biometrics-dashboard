@@ -57,3 +57,48 @@ export const INITIAL_SEQUENCES = [
     framesCount: 46
   }
 ];
+
+// Lista de videos de ejemplo listos para análisis en tiempo real con MediaPipe Pose
+export const EXAMPLE_VIDEOS = [
+  {
+    id: "DEMO-SQUAT",
+    file: "demo_squat.mp4",
+    title: "Sentadilla (Squat Demo)",
+    desc: "Predicción de ángulos de rodilla/cadera en vivo",
+    type: "correct",
+    defaultAction: "SQUAT"
+  },
+  {
+    id: "DEMO-PUSHUP",
+    file: "demo_pushup.mp4",
+    title: "Flexión de Pecho (Pushup Demo)",
+    desc: "Análisis de alineación del core y extremidades",
+    type: "limb",
+    defaultAction: "PUSHUP"
+  },
+  {
+    id: "DEMO-BENCH",
+    file: "demo_bench.mp4",
+    title: "Press de Banca (Bench Demo)",
+    desc: "Detección de simetría escapular y codos",
+    type: "correct",
+    defaultAction: "BENCH_PRESS"
+  },
+  {
+    id: "DEMO-SITUP",
+    file: "demo_situp.mp4",
+    title: "Abdominales (Situp Demo)",
+    desc: "Evaluación de curvatura cervical y lumbar",
+    type: "back",
+    defaultAction: "SITUP"
+  },
+  {
+    id: "DEMO-MIXTO",
+    file: "video_demo.mp4",
+    title: "Rutina Mixta (General Demo)",
+    desc: "Clasificación multi-ejercicio y conteo de reps",
+    type: "correct",
+    defaultAction: "SQUAT / PUSHUP"
+  }
+];
+
