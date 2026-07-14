@@ -148,6 +148,19 @@ export default function App() {
         onSelectMenu={setActiveMenu}
       />
 
+      {/* Tira Motivacional del MODO BEAST */}
+      <div className="motivational-banner">
+        <div className="motivational-text">
+          <span style={{ fontSize: '1.2rem' }}>⚡</span>
+          <span><b>MODO ATLETA IA ACTIVADO:</b> El motor biomecánico evalúa tus articulaciones a 60 FPS. ¡Mantén la postura y supera tu récord!</span>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.76rem', color: '#00ff88', fontWeight: 800 }}>✔ CERO LESIONES</span>
+          <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
+          <span style={{ fontSize: '0.76rem', color: '#00d2ff', fontWeight: 800 }}>✔ 100% PRECISIÓN</span>
+        </div>
+      </div>
+
       {/* RENDERIZADO CONDICIONAL DE LOS DIFERENTES MENÚS */}
       {activeMenu === 'live' && (
         <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
