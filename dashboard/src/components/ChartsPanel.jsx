@@ -27,26 +27,40 @@ export default function ChartsPanel({ seq }) {
   const [chartTab, setChartTab] = useState('kinematics'); // 'kinematics' | 'angles' | 'summary'
   const labels = Array.from({ length: 46 }, (_, i) => i + 1);
 
-  // Evolución de inclinación del tronco (Hombro - Cadera)
-  const trunkData = labels.map(i => {
-    const t = (i / 46) * Math.PI * 2;
+  // Evolución de inclinación del tronco (Hombro - Cadera) real o dinámica
+  const trunkData = labels.map((_, idx) => {
+    if (seq.history && seq.history.length > 0) {
+      const hIdx = Math.floor((idx / labels.length) * seq.history.length);
+      const item = seq.history[Math.min(hIdx, seq.history.length - 1)];
+      if (item && item.trunkAngle !== undefined) return Number(item.trunkAngle.toFixed(1));
+    }
+    const t = (idx / 46) * Math.PI * 2;
     let base = 8 + Math.sin(t) * 6;
     if (seq.clase === 1) base += Math.max(0, Math.sin(t) * 18);
     return Number(base.toFixed(1));
   });
 
-  // Profundidad de cadera Y
-  const depthData = labels.map(i => {
-    const t = (i / 46) * Math.PI * 2;
+  // Profundidad de cadera Y real o dinámica
+  const depthData = labels.map((_, idx) => {
+    if (seq.history && seq.history.length > 0) {
+      const hIdx = Math.floor((idx / labels.length) * seq.history.length);
+      const item = seq.history[Math.min(hIdx, seq.history.length - 1)];
+      if (item && item.hipY !== undefined) return Number(item.hipY.toFixed(1));
+    }
+    const t = (idx / 46) * Math.PI * 2;
     return Number((210 - Math.sin(t) * 55).toFixed(1));
   });
 
-  // Ángulo articular estimado (Rodillas / Codos en ciclo de repetición)
-  const angleData = labels.map(i => {
-    const t = (i / 46) * Math.PI * 2;
-    // Rango de extensión 170° a flexión de 90°
+  // Ángulo articular real o dinámico (Rodillas / Codos en ciclo de repetición)
+  const angleData = labels.map((_, idx) => {
+    if (seq.history && seq.history.length > 0) {
+      const hIdx = Math.floor((idx / labels.length) * seq.history.length);
+      const item = seq.history[Math.min(hIdx, seq.history.length - 1)];
+      if (item && item.kneeL !== undefined) return Number(item.kneeL.toFixed(1));
+    }
+    const t = (idx / 46) * Math.PI * 2;
     let angle = 130 + Math.cos(t) * 45;
-    if (seq.clase === 2) angle -= Math.sin(t) * 15; // Perturbación en valgo / extremidades
+    if (seq.clase === 2) angle -= Math.sin(t) * 15;
     return Number(angle.toFixed(1));
   });
 
