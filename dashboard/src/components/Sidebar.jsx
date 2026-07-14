@@ -19,46 +19,45 @@ export default function Sidebar({
     }
   };
 
-  // Filtrar videos de ejemplo según la búsqueda
   const filteredDemos = EXAMPLE_VIDEOS.filter(demo =>
     demo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     demo.desc.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
   return (
     <div className="card sidebar-card" style={{
       borderRadius: '18px',
-      padding: '20px',
-      background: 'rgba(15, 23, 42, 0.82)',
-      border: '1px solid rgba(56, 189, 248, 0.25)',
-      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
-      color: '#ffffff'
+      padding: '22px',
+      background: 'rgba(20, 24, 29, 0.92)',
+      border: '1px solid var(--border-color)',
+      boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
-      <div className="card-title" style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
-        ⚡ Panel de Control Biomecánico
+      <div className="card-title" style={{ color: 'var(--accent-green)', fontSize: '1rem', letterSpacing: '-0.02em' }}>
+        <span>⚡ INFERENCIA EN VIVO</span>
       </div>
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '16px' }}>
-        Activa tu cámara web o elige un video de prueba para comenzar la inferencia IA:
+      <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: '18px', lineHeight: 1.4 }}>
+        Activa tu cámara web o sube cualquier archivo de video (MP4/MOV) para corrección y biomecánica en tiempo real:
       </p>
 
-      {/* Botones principales */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
+      {/* Botones principales INK Pill */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
         <button
           className="btn btn-webcam"
           style={{
             width: '100%',
             justifyContent: 'center',
-            padding: '14px',
-            fontSize: '0.9rem',
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+            padding: '14px 20px',
+            fontSize: '0.88rem',
+            fontWeight: 900,
+            background: 'var(--accent-red, #ff3366)',
             color: '#ffffff',
-            border: '1px solid #38bdf8',
-            boxShadow: '0 4px 15px rgba(2, 132, 199, 0.4)',
-            borderRadius: '12px',
+            border: '1px solid var(--accent-red, #ff3366)',
+            borderRadius: '9999px',
             cursor: 'pointer',
-            transition: 'transform 0.2s ease'
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em'
           }}
           onClick={onStartWebcam}
         >
@@ -77,16 +76,16 @@ export default function Sidebar({
           style={{
             width: '100%',
             justifyContent: 'center',
-            padding: '13px',
-            background: 'linear-gradient(135deg, #10b981, #38bdf8)',
-            color: '#000',
+            padding: '14px 20px',
+            background: 'var(--accent-green, #a1ff4f)',
+            color: '#000000',
             fontSize: '0.88rem',
-            fontWeight: 800,
-            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
-            borderRadius: '12px',
+            fontWeight: 900,
+            borderRadius: '9999px',
             cursor: 'pointer',
-            border: 'none',
-            transition: 'transform 0.2s ease'
+            border: '1px solid var(--accent-green, #a1ff4f)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em'
           }}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -95,18 +94,18 @@ export default function Sidebar({
       </div>
 
       {/* Buscador Rápido */}
-      <div style={{ marginBottom: '18px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <input
           type="text"
-          placeholder="🔍 Buscar ejercicio o código (ej. Squat, #1659)..."
+          placeholder="🔍 Buscar ejercicio o demo..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
             width: '100%',
-            padding: '10px 14px',
-            borderRadius: '10px',
-            background: 'rgba(0, 0, 0, 0.4)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            padding: '12px 16px',
+            borderRadius: '9999px',
+            background: '#0a0e11',
+            border: '1px solid var(--border-color)',
             color: '#ffffff',
             fontSize: '0.82rem',
             outline: 'none',
@@ -116,54 +115,53 @@ export default function Sidebar({
       </div>
 
       {/* LISTA DE VIDEOS DE EJEMPLO */}
-      <div className="card-title" style={{ fontSize: '0.88rem', color: '#38bdf8', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span>🎬 Videos de Ejemplo listos</span>
-        <span style={{ fontSize: '0.72rem', background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '10px' }}>
+      <div className="card-title" style={{ fontSize: '0.88rem', color: 'var(--accent-blue, #00f0ff)', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>🎬 VIDEOS DE EJEMPLO LISTOS</span>
+        <span style={{ fontSize: '0.72rem', background: '#22272e', color: 'var(--accent-blue, #00f0ff)', padding: '3px 10px', borderRadius: '9999px', fontWeight: 800 }}>
           {filteredDemos.length}
         </span>
       </div>
-      <div className="sequence-list" style={{ marginBottom: '20px', maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="sequence-list" style={{ marginBottom: '20px', maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {filteredDemos.map((demo) => (
           <div
             key={demo.id}
             className="sequence-item demo-item"
             style={{
-              background: 'rgba(56, 189, 248, 0.08)',
-              border: '1px solid rgba(56, 189, 248, 0.25)',
-              borderRadius: '12px',
-              padding: '12px',
+              background: '#181d24',
+              border: '1px solid var(--border-color)',
+              borderRadius: '14px',
+              padding: '14px',
               cursor: 'pointer',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              transition: 'background 0.2s ease'
+              transition: 'all 0.25s ease'
             }}
             onClick={() => onSelectExampleVideo(demo)}
           >
             <div>
-              <h4 style={{ color: '#ffffff', fontSize: '0.85rem', margin: '0 0 3px 0', fontWeight: 700 }}>
+              <h4 style={{ color: '#ffffff', fontSize: '0.85rem', margin: '0 0 4px 0', fontWeight: 800, textTransform: 'uppercase' }}>
                 ▶ {demo.title}
               </h4>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0 }}>{demo.desc}</p>
+              <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)', margin: 0 }}>{demo.desc}</p>
             </div>
-            <span className={`tag tag-${demo.type}`} style={{ fontSize: '0.68rem', padding: '4px 8px', borderRadius: '12px', fontWeight: 800 }}>
+            <span className={`tag tag-${demo.type}`} style={{ fontSize: '0.68rem', padding: '4px 10px', borderRadius: '9999px', fontWeight: 900 }}>
               {demo.type === 'correct' ? 'ÓPTIMO' : 'ALERTA'}
             </span>
           </div>
         ))}
         {filteredDemos.length === 0 && (
-          <div style={{ fontSize: '0.78rem', color: '#64748b', textAlign: 'center', padding: '12px' }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', textAlign: 'center', padding: '16px' }}>
             No se encontraron ejemplos
           </div>
         )}
       </div>
 
-
       {/* Especificaciones IA */}
-      <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <div className="card-title" style={{ fontSize: '0.85rem', color: '#94a3b8' }}>🧠 Motor Biomecánico</div>
-        <div style={{ fontSize: '0.76rem', color: '#cbd5e1', lineHeight: 1.6 }}>
-          Inferencia en tiempo real 60 FPS · 33 landmarks 3D MediaPipe · Filtro de Kalman & EMA adaptativo.
+      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+        <div className="card-title" style={{ fontSize: '0.82rem', color: 'var(--text-dim)', marginBottom: '6px' }}>🧠 MOTOR BIOMECÁNICO PRO</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', lineHeight: 1.6 }}>
+          Inferencia 60 FPS · 33 landmarks 3D MediaPipe · Filtro de Kalman & EMA adaptativo.
         </div>
       </div>
     </div>

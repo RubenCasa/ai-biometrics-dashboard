@@ -4,10 +4,10 @@ export default function Header({ onToggleSidebar, activeMenu, onSelectMenu }) {
   const [audioCoachActive, setAudioCoachActive] = useState(true);
 
   const menus = [
-    { id: 'live', label: '🏋️ Estudio en Vivo', badge: 'IA 60FPS' },
-    { id: 'demos', label: '🎬 Galería Demos', badge: '5 Ejercicios' },
-    { id: 'dataset', label: '🔬 Dataset & Ciencia', badge: 'Penn Action' },
-    { id: 'guide', label: '🏆 Guía & Rutinas', badge: 'Principiantes' }
+    { id: 'live', label: 'Estudio en Vivo', badge: 'IA 60FPS' },
+    { id: 'demos', label: 'Galería Demos', badge: '5 Ejercicios' },
+    { id: 'dataset', label: 'Dataset & Ciencia', badge: 'Penn Action' },
+    { id: 'guide', label: 'Guía & Rutinas', badge: 'Principiantes' }
   ];
 
   const toggleAudioCoach = () => {
@@ -16,7 +16,7 @@ export default function Header({ onToggleSidebar, activeMenu, onSelectMenu }) {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       if (nextState) {
-        const u = new SpeechSynthesisUtterance("Coach biomecánico de voz activado. ¡Vamos por esas repeticiones perfectas!");
+        const u = new SpeechSynthesisUtterance("Coach biomecánico de voz activado en modo profesional. ¡Listo!");
         u.lang = 'es-ES';
         window.speechSynthesis.speak(u);
       }
@@ -25,7 +25,7 @@ export default function Header({ onToggleSidebar, activeMenu, onSelectMenu }) {
 
   return (
     <header className="main-header">
-      {/* Brand & Hamburger */}
+      {/* Brand & Hamburger (INK Games Style) */}
       <div className="brand">
         {activeMenu === 'live' && (
           <button
@@ -33,12 +33,12 @@ export default function Header({ onToggleSidebar, activeMenu, onSelectMenu }) {
             onClick={onToggleSidebar}
             aria-label="Abrir panel de control lateral"
             style={{
-              background: 'rgba(0, 210, 255, 0.15)',
-              border: '1px solid rgba(0, 210, 255, 0.4)',
-              color: '#00d2ff',
-              borderRadius: '12px',
-              padding: '8px 14px',
-              fontSize: '1.25rem',
+              background: '#14181d',
+              border: '1px solid #22272e',
+              color: '#a1ff4f',
+              borderRadius: '9999px',
+              padding: '8px 16px',
+              fontSize: '1.1rem',
               cursor: 'pointer',
               fontWeight: 800
             }}
@@ -48,12 +48,12 @@ export default function Header({ onToggleSidebar, activeMenu, onSelectMenu }) {
         )}
         <div className="brand-icon">⚡</div>
         <div className="brand-text">
-          <h1>AI BIOMETRICS ATHLETE PRO</h1>
-          <p>Corrección Postural en Vivo con Inteligencia Artificial · ¡Entrena como un Profesional!</p>
+          <h1>AI BIOMETRICS // INK ATHLETE</h1>
+          <p>Corrección Postural en Vivo 60 FPS · Inteligencia Artificial Biomecánica</p>
         </div>
       </div>
 
-      {/* Navegación por Pestañas Motivacionales */}
+      {/* Navegación por Pestañas (INK Pill System) */}
       <nav className="header-nav-tabs">
         {menus.map(tab => {
           const isActive = activeMenu === tab.id;
@@ -68,9 +68,9 @@ export default function Header({ onToggleSidebar, activeMenu, onSelectMenu }) {
                 <span style={{
                   fontSize: '0.66rem',
                   padding: '3px 8px',
-                  borderRadius: '12px',
-                  background: isActive ? '#000000' : 'rgba(255, 255, 255, 0.12)',
-                  color: isActive ? '#00ff88' : '#cbd5e1',
+                  borderRadius: '9999px',
+                  background: isActive ? '#000000' : '#22272e',
+                  color: isActive ? '#a1ff4f' : '#8b949e',
                   fontWeight: 900
                 }}>
                   {tab.badge}
@@ -87,25 +87,27 @@ export default function Header({ onToggleSidebar, activeMenu, onSelectMenu }) {
           onClick={toggleAudioCoach}
           title="Activar o desactivar motivación y corrección por voz"
           style={{
-            background: audioCoachActive ? 'rgba(0, 255, 136, 0.18)' : 'rgba(255, 255, 255, 0.08)',
-            border: `1px solid ${audioCoachActive ? '#00ff88' : 'rgba(255,255,255,0.2)'}`,
-            color: audioCoachActive ? '#00ff88' : '#94a3b8',
-            padding: '7px 14px',
-            borderRadius: '20px',
+            background: audioCoachActive ? 'rgba(161, 255, 79, 0.15)' : '#14181d',
+            border: `1px solid ${audioCoachActive ? '#a1ff4f' : '#22272e'}`,
+            color: audioCoachActive ? '#a1ff4f' : '#8b949e',
+            padding: '8px 16px',
+            borderRadius: '9999px',
             fontSize: '0.78rem',
             fontWeight: 800,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            transition: 'all 0.2s ease'
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            transition: 'all 0.3s ease'
           }}
         >
           <span>{audioCoachActive ? '🔊 VOZ IA: ON' : '🔇 VOZ IA: OFF'}</span>
         </button>
 
         <div className="streak-pill">
-          <span>🔥 Racha: 5 Días</span>
+          <span>🔥 RACHA: 5 DÍAS</span>
         </div>
       </div>
     </header>
