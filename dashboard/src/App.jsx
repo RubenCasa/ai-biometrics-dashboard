@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
+import ModeSelectorDock from './components/ModeSelectorDock';
 import Sidebar from './components/Sidebar';
 import KpiStrip from './components/KpiStrip';
 import SkeletonCanvas from './components/SkeletonCanvas';
@@ -21,7 +22,7 @@ export default function App() {
   const [isWebcam, setIsWebcam] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  // Estado para la barra de navegación entre los 4 menús (Estudio, Demos, Dataset, Guía)
+  // Estado para la barra de mando entre los 4 modos del centro deportivo INK
   const [activeMenu, setActiveMenu] = useState('live');
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
@@ -40,7 +41,7 @@ export default function App() {
     setCurrentSeqIdx(index);
     setFrameIdx(0);
     setIsWebcam(false);
-    setActiveMenu('live'); // Saltar directo al estudio para ver el gráfico
+    setActiveMenu('live'); // Saltar directo al estudio para ver el gráfico y evaluación
     resetDetector();
   };
 
@@ -66,7 +67,7 @@ export default function App() {
     setCurrentSeqIdx(sequences.length);
     setFrameIdx(0);
     setIsWebcam(false);
-    setActiveMenu('live'); // Cambiar al estudio en vivo para disfrutar el análisis
+    setActiveMenu('live'); // Cambiar al estudio en vivo
     resetDetector();
   };
 
@@ -93,7 +94,7 @@ export default function App() {
     setCurrentSeqIdx(sequences.length);
     setFrameIdx(0);
     setIsWebcam(false);
-    setActiveMenu('live'); // Cambiar a estudio en vivo
+    setActiveMenu('live');
     resetDetector();
   };
 
@@ -102,11 +103,11 @@ export default function App() {
     const webcamSeq = {
       id: "WEBCAM",
       vidId: null,
-      action: "CÁMARA EN VIVO",
+      action: "INFERENCIA EN VIVO",
       clase: 0,
-      confianza: 0,
-      nombre: "Iniciando cámara web...",
-      feedback: "📹 Posiciónate frente a la cámara a 1.5-2 metros de distancia para comenzar tu entrenamiento con IA.",
+      confianza: 0.95,
+      nombre: "Cámara Web en Vivo (MediaPipe 3D)",
+      feedback: "⏳ Inicializando cámara web y cargando motor MediaPipe Pose 33 landmarks...",
       type: "correct",
       isUserVideo: true,
       repCount: 0,
@@ -116,25 +117,20 @@ export default function App() {
     setSequences(prev => [...prev, webcamSeq]);
     setCurrentSeqIdx(sequences.length);
     setIsWebcam(true);
+    setFrameIdx(0);
     setActiveMenu('live');
     resetDetector();
   };
 
-  // Actualizar diagnósticos en tiempo real
-  const handleLiveAssessmentUpdate = (assessment) => {
+  // Retorno de predicciones del motor neural (Sincronizado de SkeletonCanvas)
+  const handleLiveAssessmentUpdate = (update) => {
     setSequences(prev => {
       const copy = [...prev];
-      const seq = copy[currentSeqIdx];
-      if (seq && seq.isUserVideo) {
-        seq.action = assessment.exercise;
-        seq.clase = assessment.status.clase;
-        seq.nombre = assessment.status.nombre;
-        seq.confianza = assessment.status.confianza;
-        seq.feedback = assessment.status.feedback;
-        seq.type = assessment.status.type;
-        seq.repCount = assessment.repCount || 0;
-        seq.phase = assessment.phase || 'idle';
-        seq.qualityScore = assessment.status.qualityScore || 0;
+      if (copy[currentSeqIdx]) {
+        copy[currentSeqIdx] = {
+          ...copy[currentSeqIdx],
+          ...update
+        };
       }
       return copy;
     });
@@ -142,26 +138,19 @@ export default function App() {
 
   return (
     <div className="app-root">
+      {/* 1. Header Telemetría INK Games (SIN barra de navegación arriba) */}
       <Header
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        activeMenu={activeMenu}
+      />
+
+      {/* 2. Dock Central de Mando e Integración API Motivacional */}
+      <ModeSelectorDock
         activeMenu={activeMenu}
         onSelectMenu={setActiveMenu}
       />
 
-      {/* Tira Motivacional del MODO BEAST */}
-      <div className="motivational-banner">
-        <div className="motivational-text">
-          <span style={{ fontSize: '1.2rem' }}>⚡</span>
-          <span><b>MODO ATLETA IA ACTIVADO:</b> El motor biomecánico evalúa tus articulaciones a 60 FPS. ¡Mantén la postura y supera tu récord!</span>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.76rem', color: '#00ff88', fontWeight: 800 }}>✔ CERO LESIONES</span>
-          <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
-          <span style={{ fontSize: '0.76rem', color: '#00d2ff', fontWeight: 800 }}>✔ 100% PRECISIÓN</span>
-        </div>
-      </div>
-
-      {/* RENDERIZADO CONDICIONAL DE LOS DIFERENTES MENÚS */}
+      {/* RENDERIZADO CONDICIONAL DE LOS DIFERENTES MODOS */}
       {activeMenu === 'live' && (
         <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
           <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
