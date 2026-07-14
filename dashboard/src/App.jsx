@@ -6,6 +6,9 @@ import KpiStrip from './components/KpiStrip';
 import SkeletonCanvas from './components/SkeletonCanvas';
 import FeedbackCard from './components/FeedbackCard';
 import ChartsPanel from './components/ChartsPanel';
+import DemosGallery from './components/DemosGallery';
+import DatasetView from './components/DatasetView';
+import GuideView from './components/GuideView';
 import { INITIAL_SEQUENCES, EXAMPLE_VIDEOS } from './data/sequences';
 import { resetDetector } from './utils/poseClassifier';
 
@@ -17,10 +20,13 @@ export default function App() {
   const [userVideoSrc, setUserVideoSrc] = useState('/demo_squat.mp4');
   const [isWebcam, setIsWebcam] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Estado para la barra de navegación entre los 4 menús (Estudio, Demos, Dataset, Guía)
+  const [activeMenu, setActiveMenu] = useState('live');
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
 
-  // Bucle de animación temporal para secuencias Penn Action y Demos
+  // Bucle de animación temporal para fotogramas del dataset y demos
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => {
@@ -34,10 +40,11 @@ export default function App() {
     setCurrentSeqIdx(index);
     setFrameIdx(0);
     setIsWebcam(false);
+    setActiveMenu('live'); // Saltar directo al estudio para ver el gráfico
     resetDetector();
   };
 
-  // Cargar video de ejemplo en vivo (vinculado al dataset real y MediaPipe IA)
+  // Cargar video de ejemplo desde galería o panel (vinculado a fotogramas reales y MediaPipe)
   const handleSelectExampleVideo = (example) => {
     const demoSeq = {
       id: example.id,
@@ -45,8 +52,8 @@ export default function App() {
       action: example.defaultAction || "EJERCICIO DEMO",
       clase: 0,
       confianza: 0.942,
-      nombre: "Analizando biomecánica...",
-      feedback: `⏳ Cargando fotogramas y evaluando las 33 articulaciones en ${example.title}...`,
+      nombre: "Analizando biomecánica en vivo...",
+      feedback: `⏳ Fotogramas cargados. Evaluando ángulos en ${example.title}...`,
       type: example.type || "correct",
       isUserVideo: true,
       isExampleDemo: true,
@@ -59,10 +66,11 @@ export default function App() {
     setCurrentSeqIdx(sequences.length);
     setFrameIdx(0);
     setIsWebcam(false);
+    setActiveMenu('live'); // Cambiar al estudio en vivo para disfrutar el análisis
     resetDetector();
   };
 
-  // Subida de cualquier video personal (MP4, MOV, WEBM) para predicción universal en vivo
+  // Subida de cualquier video personal para predicción universal
   const handleUploadVideo = (file) => {
     const videoURL = URL.createObjectURL(file);
     const uploadedSeq = {
@@ -72,7 +80,7 @@ export default function App() {
       clase: 0,
       confianza: 0.942,
       nombre: "Analizando con MediaPipe...",
-      feedback: "⏳ MediaPipe Pose IA está procesando y evaluando la biomecánica de tu video en tiempo real...",
+      feedback: "⏳ MediaPipe Pose IA está procesando tu video y evaluando la técnica en tiempo real...",
       type: "correct",
       isUserVideo: true,
       isUploadedVideo: true,
@@ -85,6 +93,7 @@ export default function App() {
     setCurrentSeqIdx(sequences.length);
     setFrameIdx(0);
     setIsWebcam(false);
+    setActiveMenu('live'); // Cambiar a estudio en vivo
     resetDetector();
   };
 
@@ -96,8 +105,8 @@ export default function App() {
       action: "CÁMARA EN VIVO",
       clase: 0,
       confianza: 0,
-      nombre: "Iniciando cámara...",
-      feedback: "📹 Posiciónate frente a la cámara a 1.5-2 metros de distancia para comenzar el análisis biomecánico en tiempo real.",
+      nombre: "Iniciando cámara web...",
+      feedback: "📹 Posiciónate frente a la cámara a 1.5-2 metros de distancia para comenzar tu entrenamiento con IA.",
       type: "correct",
       isUserVideo: true,
       repCount: 0,
@@ -107,10 +116,11 @@ export default function App() {
     setSequences(prev => [...prev, webcamSeq]);
     setCurrentSeqIdx(sequences.length);
     setIsWebcam(true);
+    setActiveMenu('live');
     resetDetector();
   };
 
-  // Actualizar diagnósticos y conteo en tiempo real desde MediaPipe Pose
+  // Actualizar diagnósticos en tiempo real
   const handleLiveAssessmentUpdate = (assessment) => {
     setSequences(prev => {
       const copy = [...prev];
@@ -132,41 +142,61 @@ export default function App() {
 
   return (
     <div className="app-root">
-      <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-      <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
-        <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
-          <Sidebar
-            sequences={sequences}
-            currentSeqIdx={currentSeqIdx}
-            onSelectSeq={handleSelectSeq}
-            onSelectExampleVideo={handleSelectExampleVideo}
-            onUploadVideo={handleUploadVideo}
-            onStartWebcam={handleStartWebcam}
-          />
-        </div>
-        <div className="main-content">
-          <KpiStrip seq={currentSeq} isLive={currentSeq.isUserVideo} />
+      <Header
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        activeMenu={activeMenu}
+        onSelectMenu={setActiveMenu}
+      />
 
-          <div className="viewer-grid">
-            <SkeletonCanvas
-              seq={currentSeq}
-              videoSrc={userVideoSrc}
-              isPlaying={isPlaying}
-              onTogglePlay={() => setIsPlaying(!isPlaying)}
-              frameIdx={frameIdx}
-              onFrameChange={setFrameIdx}
-              onLiveAssessmentUpdate={handleLiveAssessmentUpdate}
-              isWebcam={isWebcam}
+      {/* RENDERIZADO CONDICIONAL DE LOS DIFERENTES MENÚS */}
+      {activeMenu === 'live' && (
+        <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
+          <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
+            <Sidebar
+              sequences={sequences}
+              currentSeqIdx={currentSeqIdx}
+              onSelectSeq={handleSelectSeq}
+              onSelectExampleVideo={handleSelectExampleVideo}
+              onUploadVideo={handleUploadVideo}
+              onStartWebcam={handleStartWebcam}
             />
-            <FeedbackCard seq={currentSeq} />
           </div>
+          <div className="main-content">
+            <KpiStrip seq={currentSeq} isLive={currentSeq.isUserVideo} />
 
-          <ChartsPanel seq={currentSeq} />
+            <div className="viewer-grid">
+              <SkeletonCanvas
+                seq={currentSeq}
+                videoSrc={userVideoSrc}
+                isPlaying={isPlaying}
+                onTogglePlay={() => setIsPlaying(!isPlaying)}
+                frameIdx={frameIdx}
+                onFrameChange={setFrameIdx}
+                onLiveAssessmentUpdate={handleLiveAssessmentUpdate}
+                isWebcam={isWebcam}
+              />
+              <FeedbackCard seq={currentSeq} />
+            </div>
+
+            <ChartsPanel seq={currentSeq} />
+          </div>
         </div>
-      </div>
+      )}
+
+      {activeMenu === 'demos' && (
+        <DemosGallery onSelectDemo={handleSelectExampleVideo} />
+      )}
+
+      {activeMenu === 'dataset' && (
+        <DatasetView onSelectDatasetItem={handleSelectSeq} />
+      )}
+
+      {activeMenu === 'guide' && (
+        <GuideView onGoToLive={() => setActiveMenu('live')} />
+      )}
 
       {/* Overlay para cerrar sidebar en móvil */}
-      {sidebarOpen && (
+      {sidebarOpen && activeMenu === 'live' && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
     </div>
