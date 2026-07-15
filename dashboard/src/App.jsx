@@ -24,7 +24,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Estado para la barra de mando entre los modos
-  const [activeMenu, setActiveMenu] = useState('hero');
+  const [activeMenu, setActiveMenu] = useState('live');
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
 
@@ -127,27 +127,27 @@ export default function App() {
 
   return (
     <div className="app-root">
-      {/* Renderizar Header y Dock solo si no estamos en el Hero */}
-      {activeMenu !== 'hero' && (
-        <>
-          {/* 1. Header Telemetría INK Games (SIN barra de navegación arriba) */}
-          <Header
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-            activeMenu={activeMenu}
-          />
-
-          {/* 2. Dock Central de Mando e Integración API Motivacional */}
-          <ModeSelectorDock
-            activeMenu={activeMenu}
-            onSelectMenu={setActiveMenu}
-          />
-        </>
+      {/* Si estamos en el modo principal, mostramos el Hero arriba del todo */}
+      {activeMenu === 'live' && (
+        <Hero onStart={() => {
+          document.getElementById('dashboard-start')?.scrollIntoView({ behavior: 'smooth' });
+        }} />
       )}
 
-      {/* RENDERIZADO CONDICIONAL DE LOS DIFERENTES MODOS */}
-      {activeMenu === 'hero' && (
-        <Hero onStart={() => setActiveMenu('live')} />
-      )}
+      {/* Un ancla invisible para hacer scroll */}
+      <div id="dashboard-start" />
+
+      {/* 1. Header Telemetría INK Games */}
+      <Header
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        activeMenu={activeMenu}
+      />
+
+      {/* 2. Dock Central de Mando e Integración API Motivacional */}
+      <ModeSelectorDock
+        activeMenu={activeMenu}
+        onSelectMenu={setActiveMenu}
+      />
       {activeMenu === 'live' && (
         <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
           <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
