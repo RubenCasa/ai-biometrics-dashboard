@@ -17,61 +17,50 @@ export default function FeedbackCard({ seq }) {
 
   const phaseLabel = seq.phase === 'up' ? '⬆ SUBIDA' : seq.phase === 'down' ? '⬇ BAJADA' : '— ESTABLE';
 
-  // Síntesis Neural + Coach IA Motivador (Sin corchetes de lectura, habla natural y enérgica como un entrenador real)
+  // Síntesis Neural + Coach de Gimnasio 100% Humano y Directo (Voz natural sin tecnicismos ni porcentajes)
   const speakFeedback = async () => {
     if (isSpeaking) return;
     setIsSpeaking(true);
-    setStatusText('⚡ COACH IA HABLANDO...');
+    setStatusText('⚡ COACH HABLANDO...');
 
     try {
-      // 1. Diagnóstico de Entrenador IA Olímpico (Sin corchetes ni estilo de lectura, habla natural y motivador)
+      // 1. Diagnóstico Puro de Coach de Gimnasio (Comandos directos, enérgicos y sin tecnicismos ni porcentajes aburridos)
       let aiCoachAdvice = '';
+      const actionLower = (seq.action || '').toLowerCase();
+
       if (seq.clase === 0) {
-        aiCoachAdvice = `¡Eso es, excelente técnica en ${seq.action || 'tu ejercicio'}! Mantén el pecho arriba y la espalda firme, vas con noventa y cuatro por ciento de calidad, ¡sigue así con ese ritmo!`;
+        if (actionLower.includes('sentadilla') || actionLower.includes('squat')) {
+          aiCoachAdvice = `¡Eso es, rompe el paralelo y empuja fuerte con los talones! ¡Excelente profundidad, sigue así!`;
+        } else if (actionLower.includes('flexi') || actionLower.includes('pushup')) {
+          aiCoachAdvice = `¡Buenísima flexión! ¡Espalda recta en tabla y codo firme, sigue empujando con todo!`;
+        } else if (actionLower.includes('abdomin') || actionLower.includes('situp')) {
+          aiCoachAdvice = `¡Perfecta contracción! ¡Sube exhalando con fuerza y controla el descenso!`;
+        } else {
+          aiCoachAdvice = `¡Excelente técnica y ritmo constante! ¡Mantén la postura firme y no pierdas la concentración, vamos!`;
+        }
       } else if (seq.clase === 1) {
-        aiCoachAdvice = `¡Oye, cuidado con la espalda en ${seq.action || 'el movimiento'}! Estás inclinando el tronco hacia adelante. Aprieta fuerte el core y saca pecho ahora mismo, ¡vamos!`;
+        if (actionLower.includes('sentadilla') || actionLower.includes('squat')) {
+          aiCoachAdvice = `¡Saca pecho ya! ¡Estás inclinando demasiado la espalda, aprieta el core y endereza el tronco arriba!`;
+        } else if (actionLower.includes('flexi') || actionLower.includes('pushup')) {
+          aiCoachAdvice = `¡No dejes caer la cadera! ¡Activa glúteos y abdomen para alinear toda la columna!`;
+        } else if (actionLower.includes('abdomin') || actionLower.includes('situp')) {
+          aiCoachAdvice = `¡No jales el cuello con las manos! ¡La fuerza sale pura del abdomen, levanta el pecho!`;
+        } else {
+          aiCoachAdvice = `¡Oye, corrige la postura! ¡Estás perdiendo la línea del tronco, activa el abdomen ya!`;
+        }
       } else {
-        aiCoachAdvice = `¡Ojo con la alineación de tus articulaciones en ${seq.action || 'tu postura'}! No dejes que las rodillas o codos pierdan estabilidad, controla el recorrido ahora.`;
+        aiCoachAdvice = `¡Ojo con esas articulaciones! ¡Estabiliza las rodillas y mantén el equilibrio durante todo el recorrido!`;
       }
 
-      // Si hay un mensaje biomecánico específico del clasificador en vivo, lo adaptamos a voz de coach natural
-      if (seq.feedback && !seq.feedback.includes('Analizando') && !seq.feedback.includes('Esperando')) {
+      // Si hay un consejo biomecánico en vivo específico del detector y estamos en alerta, lo decimos con autoridad de entrenador
+      if (seq.feedback && !seq.feedback.includes('Analizando') && !seq.feedback.includes('Esperando') && seq.clase !== 0) {
         const fraseLimpia = seq.feedback.replace(/✅|⚠️|ALERTA en Fotograma #\d+:?/gi, '').replace(/\([^)]*\)/g, '').trim();
         if (fraseLimpia.length > 5) {
-          aiCoachAdvice = `¡Atención atleta! ${fraseLimpia} ¡Aprieta el core y ajusta la técnica de inmediato!`;
+          aiCoachAdvice = `¡Atención! ${fraseLimpia} ¡Aprieta el core y corrige la técnica de inmediato!`;
         }
       }
 
-      // Intentamos enriquecer con LLM de Pollinations SI responde en menos de 650ms
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 650);
-        const promptText = `Eres un entrenador personal olímpico de alta energía en el gimnasio estilo INK Games. El atleta hace ${seq.action || 'ejercicio'}. Score: ${confPercentage}%. Alerta actual: "${seq.feedback}". Dame UNA sola oración corta en español hablada directamente al atleta como un coach entusiasta y exigente, con signos de exclamación ¡...! SIN corchetes ni introducciones robóticas.`;
-
-        const aiResponse = await fetch('https://text.pollinations.ai/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content: promptText }],
-            model: 'qwen'
-          }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (aiResponse.ok) {
-          const textData = await aiResponse.text();
-          // Limpiamos cualquier corchete si la IA llegó a añadirlo por error
-          const cleanAI = textData.replace(/\[.*?\]:?/g, '').trim();
-          if (cleanAI && cleanAI.length > 10 && cleanAI.length < 220) {
-            aiCoachAdvice = cleanAI;
-          }
-        }
-      } catch (fastTimeoutErr) {
-        // Si tarda más de 650ms, usamos el coach motivador instantáneo
-      }
-
-      // 2. ÚNICA VOZ OFICIAL EN ESPAÑOL: Entrenador IA "Enrique" (Voz masculina neural firme, clara y 100% en español)
+      // 2. ÚNICA VOZ OFICIAL EN ESPAÑOL: Entrenador IA "Enrique" (Voz masculina profunda, firme y natural de coach)
       let audioPlayed = false;
       try {
         const encodedText = encodeURIComponent(aiCoachAdvice);
@@ -79,8 +68,8 @@ export default function FeedbackCard({ seq }) {
         const streamElementsUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Enrique&text=${encodedText}`;
         const audio = new Audio(streamElementsUrl);
         
-        // Ritmo ágil de entrenador en vivo (1.14x)
-        audio.playbackRate = 1.14;
+        // Ritmo natural de voz humana masculina de entrenador (1.05x para no alterar el tono grave)
+        audio.playbackRate = 1.05;
         
         await new Promise((resolve, reject) => {
           const timeout = setTimeout(() => reject(new Error('Audio timeout')), 5000);
@@ -92,16 +81,16 @@ export default function FeedbackCard({ seq }) {
         // Si la red no responde, usamos el respaldo local en el navegador
       }
 
-      // 3. Respaldo Local: Garantizamos la MISMA voz masculina en español para no cambiar de tono ni de idioma
+      // 3. Respaldo Local: Garantizamos la MISMA voz masculina en español con ritmo humano natural
       if (!audioPlayed && typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(aiCoachAdvice);
         utterance.lang = 'es-ES';
-        utterance.rate = 1.15;
+        utterance.rate = 1.05; // Cadencia humana profunda y natural de entrenador
         utterance.pitch = 1.0;
 
         const voices = window.speechSynthesis.getVoices();
-        // Buscamos estrictamente una voz MASCULINA en ESPAÑOL (Alvaro, Pablo, Jorge, Miguel) para mantener la misma voz del coach
+        // Buscamos estrictamente una voz MASCULINA en ESPAÑOL para mantener el mismo tono de coach
         const bestVoice = voices.find(v => 
           (v.lang.includes('es') || v.lang.includes('ES')) &&
           (v.name.includes('Alvaro') || v.name.includes('Pablo') || v.name.includes('Jorge') || v.name.includes('Miguel') || v.name.includes('Male'))
