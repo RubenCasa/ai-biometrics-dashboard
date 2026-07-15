@@ -114,9 +114,13 @@ export function extractMetrics(landmarks) {
   // POSICIÓN RELATIVA (body orientation)
   const bodyDY = Math.abs(midShoulder.y - midHip.y) / torsoLen;
 
-  // Confianza mínima de los landmarks clave
-  const keyLandmarks = [lSh, rSh, lHip, rHip, lKnee, rKnee, lAnkle, rAnkle];
-  const avgVisibility = keyLandmarks.reduce((s, l) => s + (l.visibility || 0), 0) / keyLandmarks.length;
+  // Confianza de landmarks clave (soportando vistas laterales/perfil donde un lado queda oculto)
+  const leftLandmarks = [lSh, lHip, lKnee, lAnkle];
+  const rightLandmarks = [rSh, rHip, rKnee, rAnkle];
+  const leftVis = leftLandmarks.reduce((s, l) => s + (l.visibility || 0), 0) / leftLandmarks.length;
+  const rightVis = rightLandmarks.reduce((s, l) => s + (l.visibility || 0), 0) / rightLandmarks.length;
+  const allVis = [...leftLandmarks, ...rightLandmarks].reduce((s, l) => s + (l.visibility || 0), 0) / 8;
+  const avgVisibility = Math.max(leftVis, rightVis, allVis);
 
   return {
     // Ángulos
@@ -185,8 +189,8 @@ export class ExerciseDetector {
     this.buffer.push(metrics);
     if (this.buffer.length > this.bufferSize) this.buffer.shift();
 
-    // Necesitamos al menos 10 frames para clasificar
-    if (this.buffer.length < 10) {
+    // Necesitamos al menos 3 frames para empezar la clasificación rápida en video
+    if (this.buffer.length < 3) {
       return {
         exercise: 'Calibrando MediaPipe 3D...',
         phase: 'idle',
@@ -237,21 +241,21 @@ export class ExerciseDetector {
     const kneeVariation = Math.max(...recent.map(r => (r.kneeAngleL + r.kneeAngleR) / 2))
                         - Math.min(...recent.map(r => (r.kneeAngleL + r.kneeAngleR) / 2));
 
-    // ─── Reglas de Clasificación ─────────────────────────────────────
+    // ─── Reglas de Clasificación (Prioridad por especificidad postural) ───
 
-    // SQUAT: Rango vertical de cadera + rodillas flexionadas + tronco erguido
-    if ((hipRange > 0.04 || avgKnee < 165) && kneeVariation > 8 && avgBodyDY > 0.15) {
-      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + hipRange * 2) };
+    // SITUP (Abdominal): Cadera baja/media + tronco acostado/sentado flexionado o cuerpo cerca al suelo
+    if ((avgHip < 145 || m.hipDepthNorm > 0.40) && avgBodyDY < 0.42 && avgTrunk < 65 && avgKnee < 165) {
+      return { name: 'SITUP (Abdominal)', confidence: Math.min(0.96, 0.65 + hipRange * 3) };
     }
 
-    // PUSHUP: Cuerpo horizontal (bodyDY bajo) + codos flexionándose o tronco extendido horizontalmente
+    // PUSHUP (Flexión): Cuerpo horizontal (bodyDY bajo) + codos flexionándose o tronco extendido horizontalmente
     if (avgBodyDY < 0.22 && avgElbow < 165 && avgTrunk > 35) {
       return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.94, 0.60 + (180 - avgElbow) / 100) };
     }
 
-    // SITUP: Rango moderado de cadera + tronco se flexiona o cuerpo acostado/sentado
-    if ((hipRange > 0.03 || avgHip < 140) && avgBodyDY < 0.38 && avgTrunk < 55) {
-      return { name: 'SITUP (Abdominal)', confidence: Math.min(0.92, 0.55 + hipRange * 3) };
+    // SQUAT (Sentadilla): Rango vertical de cadera + rodillas flexionadas + tronco erguido o semi-inclinado
+    if ((hipRange > 0.03 || avgKnee < 165) && (kneeVariation > 5 || avgBodyDY > 0.15)) {
+      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + hipRange * 2) };
     }
 
     // LUNGE: Asimetría de rodillas (una muy flexionada, otra más extendida)

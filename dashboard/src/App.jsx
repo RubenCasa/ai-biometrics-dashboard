@@ -110,42 +110,6 @@ export default function App() {
     resetDetector();
   };
 
-  // Activar cámara web en vivo
-  const handleStartWebcam = () => {
-    const webcamSeq = {
-      id: "WEBCAM",
-      vidId: null,
-      action: "INFERENCIA EN VIVO",
-      clase: 0,
-      confianza: 0.95,
-      nombre: "Cámara Web en Vivo (MediaPipe 3D)",
-      feedback: "⏳ Inicializando cámara web y cargando motor MediaPipe Pose 33 landmarks...",
-      type: "correct",
-      isUserVideo: true,
-      repCount: 0,
-      phase: 'idle',
-      qualityScore: 0
-    };
-    setSequences(prev => {
-      const existingIdx = prev.findIndex(s => s.id === "WEBCAM");
-      if (existingIdx >= 0) {
-        const copy = [...prev];
-        copy[existingIdx] = webcamSeq;
-        return copy;
-      }
-      return [...prev, webcamSeq];
-    });
-    setSequences(prev => {
-      const idx = prev.findIndex(s => s.id === "WEBCAM");
-      if (idx >= 0) setCurrentSeqIdx(idx);
-      return prev;
-    });
-    setIsWebcam(true);
-    setFrameIdx(0);
-    setActiveMenu('live');
-    resetDetector();
-  };
-
   // Retorno de predicciones del motor neural (Sincronizado de SkeletonCanvas)
   const handleLiveAssessmentUpdate = (update) => {
     setSequences(prev => {
@@ -184,7 +148,6 @@ export default function App() {
               onSelectSeq={handleSelectSeq}
               onSelectExampleVideo={handleSelectExampleVideo}
               onUploadVideo={handleUploadVideo}
-              onStartWebcam={handleStartWebcam}
             />
           </div>
           <div className="main-content">
@@ -199,7 +162,7 @@ export default function App() {
                 frameIdx={frameIdx}
                 onFrameChange={setFrameIdx}
                 onLiveAssessmentUpdate={handleLiveAssessmentUpdate}
-                isWebcam={isWebcam}
+                isWebcam={false}
               />
               <FeedbackCard seq={currentSeq} />
             </div>

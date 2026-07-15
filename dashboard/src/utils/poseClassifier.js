@@ -73,7 +73,7 @@ export function evaluatePoseAndExercise(landmarks, history = []) {
 
   // Extraer métricas biomecánicas normalizadas
   const metrics = extractMetrics(landmarks);
-  if (!metrics || metrics.avgVisibility < 0.20) {
+  if (!metrics || metrics.avgVisibility < 0.05) {
     return {
       exercise: 'Esperando visibilidad del cuerpo...',
       repCount: globalDetector.repCount,

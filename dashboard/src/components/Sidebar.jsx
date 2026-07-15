@@ -38,32 +38,11 @@ export default function Sidebar({
         <span>⚡ INFERENCIA EN VIVO</span>
       </div>
       <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: '18px', lineHeight: 1.4 }}>
-        Activa tu cámara web o sube cualquier archivo de video (MP4/MOV) para corrección y biomecánica en tiempo real:
+        Sube cualquier archivo de video (MP4/MOV) para corrección y análisis biomecánico en tiempo real con IA:
       </p>
 
       {/* Botones principales INK Pill */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-        <button
-          className="btn btn-webcam"
-          style={{
-            width: '100%',
-            justifyContent: 'center',
-            padding: '14px 20px',
-            fontSize: '0.88rem',
-            fontWeight: 900,
-            background: 'var(--accent-red, #ff3366)',
-            color: '#ffffff',
-            border: '1px solid var(--accent-red, #ff3366)',
-            borderRadius: '9999px',
-            cursor: 'pointer',
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em'
-          }}
-          onClick={onStartWebcam}
-        >
-          📹 INICIAR CÁMARA WEB EN VIVO
-        </button>
-
         <input
           type="file"
           ref={fileInputRef}
