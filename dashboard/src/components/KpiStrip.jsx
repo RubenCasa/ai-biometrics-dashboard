@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function KpiStrip({ seq, isLive }) {
+export default function KpiStrip({ seq }) {
   const statusColor =
     seq.clase === 0
       ? 'var(--accent-green, #a1ff4f)'
@@ -15,118 +15,160 @@ export default function KpiStrip({ seq, isLive }) {
       ? 'ALERTA TRONCO ⚠️'
       : 'ALERTA RODILLA/EXTREMIDAD ⚠️';
 
-  const phaseText =
-    seq.phase === 'up'
-      ? '⬆ ASCENSO (Concéntrica)'
-      : seq.phase === 'down'
-      ? '⬇ DESCENSO (Excéntrica)'
-      : '⏸ ESTABLE / IDLE';
-
   const estimatedAngle =
     seq.phase === 'down' ? '92°' : seq.phase === 'up' ? '154°' : seq.clase === 0 ? '142°' : '118°';
 
   const kpiCardStyle = {
-    padding: '18px 20px',
-    borderRadius: '16px',
-    background: 'var(--bg-card, #14181d)',
-    border: '1px solid var(--border-color, #22272e)',
+    padding: '20px 22px',
+    borderRadius: '18px',
+    background: 'linear-gradient(135deg, rgba(20, 24, 29, 0.92) 0%, rgba(13, 16, 20, 0.96) 100%)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-    transition: 'all 0.3s ease'
+    boxShadow: '0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+    transition: 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease',
+    position: 'relative',
+    overflow: 'hidden'
   };
 
   return (
     <div className="kpi-strip" style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-      gap: '16px',
-      marginBottom: '24px'
+      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+      gap: '18px',
+      marginBottom: '28px'
     }}>
-      {/* 1. Fuente Activa */}
-      <div className="kpi-card" style={kpiCardStyle}>
-        <div className="kpi-label">
-          📡 FUENTE DE VIDEO
+      {/* 1. Ejercicio Detectado */}
+      <div 
+        className="kpi-card" 
+        style={{
+          ...kpiCardStyle,
+          borderLeft: '4px solid var(--accent-blue, #00f0ff)'
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.transform = 'translateY(-3px)';
+          e.currentTarget.style.boxShadow = '0 16px 36px rgba(0, 240, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.08)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.transform = '';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)';
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+            🏋️ EJERCICIO DETECTADO
+          </span>
+          <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: '6px', background: 'rgba(0, 240, 255, 0.12)', color: '#00f0ff', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+            AI CORE
+          </span>
         </div>
-        <div className="kpi-value">
-          {isLive
-            ? (seq.id === 'WEBCAM' ? '📹 CÁMARA WEB' : '📁 VIDEO MP4')
-            : `📊 # ${seq.id}`}
-        </div>
-        <div style={{ fontSize: '0.74rem', color: 'var(--accent-blue, #00f0ff)', fontWeight: 700 }}>
-          {seq.isExampleDemo ? '● DEMO EN VIVO' : isLive ? '● INFERENCIA IA 60 FPS' : '● DATASET 2D/3D'}
-        </div>
-      </div>
-
-      {/* 2. Ejercicio Detectado */}
-      <div className="kpi-card" style={kpiCardStyle}>
-        <div className="kpi-label">
-          🏋️ EJERCICIO DETECTADO
-        </div>
-        <div className="kpi-value" style={{ color: 'var(--accent-blue, #00f0ff)' }}>
+        <div style={{ fontSize: '1.55rem', fontWeight: 900, color: 'var(--accent-blue, #00f0ff)', letterSpacing: '-0.02em', margin: '4px 0' }}>
           {seq.action?.split('(')[0]?.trim() || 'GENERAL'}
         </div>
-        <div style={{ fontSize: '0.74rem', color: '#8b949e', fontWeight: 600 }}>
+        <div style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00f0ff', display: 'inline-block' }}></span>
           Clasificación Neural Multiclase
         </div>
       </div>
 
-      {/* 3. Estado Postural */}
-      <div className="kpi-card" style={{
-        ...kpiCardStyle,
-        border: `1px solid ${statusColor}`,
-        boxShadow: `0 0 20px ${statusColor}20`
-      }}>
-        <div className="kpi-label">
-          🩺 DIAGNÓSTICO BIOMECÁNICO
+      {/* 2. Diagnóstico Biomecánico */}
+      <div 
+        className="kpi-card" 
+        style={{
+          ...kpiCardStyle,
+          border: `1px solid ${statusColor}44`,
+          borderLeft: `4px solid ${statusColor}`,
+          boxShadow: `0 12px 30px rgba(0,0,0,0.5), 0 0 25px ${statusColor}18`
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.transform = 'translateY(-3px)';
+          e.currentTarget.style.boxShadow = `0 16px 36px rgba(0,0,0,0.6), 0 0 32px ${statusColor}33`;
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.transform = '';
+          e.currentTarget.style.boxShadow = `0 12px 30px rgba(0,0,0,0.5), 0 0 25px ${statusColor}18`;
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+            🩺 DIAGNÓSTICO BIOMECÁNICO
+          </span>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: statusColor, boxShadow: `0 0 10px ${statusColor}` }}></span>
         </div>
-        <div className="kpi-value" style={{ color: statusColor, fontSize: '1.35rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ color: statusColor, fontSize: '1.45rem', fontWeight: 900, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '4px 0' }}>
           {statusText}
         </div>
-        <div style={{ fontSize: '0.74rem', color: '#8b949e', fontWeight: 600 }}>
+        <div style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 700 }}>
           {seq.nombre?.toUpperCase()}
         </div>
       </div>
 
-      {/* 4. Calidad & Confianza */}
-      <div className="kpi-card" style={kpiCardStyle}>
-        <div className="kpi-label">
-          🎯 CALIDAD & CONFIANZA
+      {/* 3. Calidad & Confianza */}
+      <div 
+        className="kpi-card" 
+        style={{
+          ...kpiCardStyle,
+          borderLeft: '4px solid var(--accent-green, #a1ff4f)'
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.transform = 'translateY(-3px)';
+          e.currentTarget.style.boxShadow = '0 16px 36px rgba(161, 255, 79, 0.15), inset 0 1px 0 rgba(255,255,255,0.08)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.transform = '';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)';
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+            🎯 CALIDAD & CONFIANZA
+          </span>
+          <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: '6px', background: 'rgba(161, 255, 79, 0.12)', color: '#a1ff4f', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+            PRECISIÓN
+          </span>
         </div>
-        <div className="kpi-value" style={{ color: 'var(--accent-green, #a1ff4f)' }}>
+        <div style={{ fontSize: '1.55rem', fontWeight: 900, color: 'var(--accent-green, #a1ff4f)', letterSpacing: '-0.02em', margin: '4px 0' }}>
           {seq.qualityScore !== undefined && seq.qualityScore > 0
             ? `${seq.qualityScore.toFixed(0)}%`
             : `${(seq.confianza * 100).toFixed(1)}%`
           }
         </div>
-        <div style={{ fontSize: '0.74rem', color: '#8b949e', fontWeight: 600 }}>
+        <div style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#a1ff4f', display: 'inline-block' }}></span>
           Precisión geométrica del movimiento
         </div>
       </div>
 
-      {/* 5. Conteo de Repeticiones */}
-      <div className="kpi-card" style={kpiCardStyle}>
-        <div className="kpi-label">
-          🔄 REPETICIONES VÁLIDAS
+      {/* 4. Ángulo Articular Clave */}
+      <div 
+        className="kpi-card" 
+        style={{
+          ...kpiCardStyle,
+          borderLeft: '4px solid var(--accent-amber, #ffb703)'
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.transform = 'translateY(-3px)';
+          e.currentTarget.style.boxShadow = '0 16px 36px rgba(255, 183, 3, 0.15), inset 0 1px 0 rgba(255,255,255,0.08)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.transform = '';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)';
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+            📐 ÁNGULO ARTICULAR CLAVE
+          </span>
+          <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: '6px', background: 'rgba(255, 183, 3, 0.12)', color: '#ffb703', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+            IA TRACKING
+          </span>
         </div>
-        <div className="kpi-value" style={{ color: 'var(--accent-purple, #c084fc)' }}>
-          {seq.repCount || (seq.isExampleDemo ? '3' : '1')} <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#8b949e' }}>REPS</span>
-        </div>
-        <div style={{ fontSize: '0.74rem', color: '#8b949e', fontWeight: 600 }}>
-          {phaseText}
-        </div>
-      </div>
-
-      {/* 6. Ángulo Articular Clave */}
-      <div className="kpi-card" style={kpiCardStyle}>
-        <div className="kpi-label">
-          📐 ÁNGULO ARTICULAR CLAVE
-        </div>
-        <div className="kpi-value" style={{ color: 'var(--accent-amber, #ffb703)' }}>
+        <div style={{ fontSize: '1.55rem', fontWeight: 900, color: 'var(--accent-amber, #ffb703)', letterSpacing: '-0.02em', margin: '4px 0' }}>
           {estimatedAngle}
         </div>
-        <div style={{ fontSize: '0.74rem', color: '#8b949e', fontWeight: 600 }}>
+        <div style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ffb703', display: 'inline-block' }}></span>
           Extensión / Flexión medida por IA
         </div>
       </div>
