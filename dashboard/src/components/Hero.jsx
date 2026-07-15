@@ -111,24 +111,7 @@ export default function Hero({ onStart }) {
             </span>
           </div>
 
-          {/* Tarjeta de la Cita */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            padding: '24px 32px',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            boxShadow: '0 15px 35px rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(10px)',
-            marginTop: '10px'
-          }}>
-            <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '8px' }}>💡</span>
-            <p style={{ fontSize: '1.05rem', color: '#e2e8f0', fontStyle: 'italic', margin: '0 0 12px 0', lineHeight: 1.6, fontWeight: 300 }}>
-              "Tu espalda baja y rodillas son tus activos más valiosos. Mantén el ángulo a 90° y deja que la IA guíe tu técnica."
-            </p>
-            <span style={{ fontSize: '0.8rem', color: 'var(--accent-green, #a1ff4f)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              — COACH IA MEDIAPIPE
-            </span>
-          </div>
+
         </div>
       </div>
 
