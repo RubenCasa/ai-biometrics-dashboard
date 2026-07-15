@@ -350,12 +350,12 @@ export class ExerciseDetector {
     const framesSincePhase = this.framesSinceStart - this.lastPhaseChange;
 
     if (trackingValue < midThreshold && this.currentPhase !== 'down') {
-      if (this.currentPhase === 'up' && framesSincePhase > this.minRepInterval) {
-        this.repCount++;
-      }
       this.currentPhase = 'down';
       this.lastPhaseChange = this.framesSinceStart;
     } else if (trackingValue > midThreshold && this.currentPhase !== 'up') {
+      if (this.currentPhase === 'down' && framesSincePhase > this.minRepInterval) {
+        this.repCount++;
+      }
       this.currentPhase = 'up';
       this.lastPhaseChange = this.framesSinceStart;
     }
