@@ -71,40 +71,42 @@ export default function FeedbackCard({ seq }) {
         // Si tarda más de 650ms, usamos el coach motivador instantáneo
       }
 
-      // 2. Síntesis Neural con Amazon Polly (StreamElements API - Voz Neural de Coach "Enrique" o "Lupe" a ritmo natural 1.14x)
+      // 2. ÚNICA VOZ OFICIAL EN ESPAÑOL: Entrenador IA "Enrique" (Voz masculina neural firme, clara y 100% en español)
       let audioPlayed = false;
       try {
         const encodedText = encodeURIComponent(aiCoachAdvice);
-        // "Enrique" es la voz masculina neural más autoritaria y expresiva en español para un coach deportivo
+        // "Enrique" es la única voz oficial del Coach INK Games en español (Amazon Polly Neural)
         const streamElementsUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Enrique&text=${encodedText}`;
         const audio = new Audio(streamElementsUrl);
         
-        // Ritmo ágil pero natural y conversacional como una persona hablando con energía (1.14x)
+        // Ritmo ágil de entrenador en vivo (1.14x)
         audio.playbackRate = 1.14;
         
         await new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Audio timeout')), 4500);
+          const timeout = setTimeout(() => reject(new Error('Audio timeout')), 5000);
           audio.onended = () => { clearTimeout(timeout); audioPlayed = true; resolve(); };
           audio.onerror = (e) => { clearTimeout(timeout); reject(e); };
           audio.play().catch(reject);
         });
       } catch (ttsError) {
-        // Fallback al motor del navegador si la nube no responde
+        // Si la red no responde, usamos el respaldo local en el navegador
       }
 
-      // 3. Fallback Instantáneo a Voz Natural Neural en el navegador con intonation conversacional
+      // 3. Respaldo Local: Garantizamos la MISMA voz masculina en español para no cambiar de tono ni de idioma
       if (!audioPlayed && typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(aiCoachAdvice);
         utterance.lang = 'es-ES';
-        utterance.rate = 1.15; // Habla con energía, fluidez y entonación humana
+        utterance.rate = 1.15;
         utterance.pitch = 1.0;
 
         const voices = window.speechSynthesis.getVoices();
+        // Buscamos estrictamente una voz MASCULINA en ESPAÑOL (Alvaro, Pablo, Jorge, Miguel) para mantener la misma voz del coach
         const bestVoice = voices.find(v => 
           (v.lang.includes('es') || v.lang.includes('ES')) &&
-          (v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Neural') || v.name.includes('Google') || v.name.includes('Alvaro') || v.name.includes('Dalia'))
-        ) || voices.find(v => v.lang.includes('es'));
+          (v.name.includes('Alvaro') || v.name.includes('Pablo') || v.name.includes('Jorge') || v.name.includes('Miguel') || v.name.includes('Male'))
+        ) || voices.find(v => (v.lang.includes('es') || v.lang.includes('ES')) && (v.name.includes('Natural') || v.name.includes('Online')))
+          || voices.find(v => v.lang.includes('es'));
 
         if (bestVoice) utterance.voice = bestVoice;
 
@@ -115,7 +117,7 @@ export default function FeedbackCard({ seq }) {
         });
       }
     } catch (e) {
-      console.error('Error con voz de coach natural:', e);
+      console.error('Error con voz única en español:', e);
     } finally {
       setIsSpeaking(false);
       setStatusText('🔊 ESCUCHAR CORRECCIÓN POR VOZ (IA)');
