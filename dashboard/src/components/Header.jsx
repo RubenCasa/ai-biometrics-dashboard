@@ -1,70 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 export default function Header({ onToggleSidebar, activeMenu }) {
-  const [audioCoachActive, setAudioCoachActive] = useState(true);
-  const [weatherData, setWeatherData] = useState({ temp: '21.5°C', humidity: '44%', status: '⚡ O2 Óptimo' });
-  const [loadingWeather, setLoadingWeather] = useState(true);
-
-  // Consulta API pública de Clima y Biometría Ambiental en tiempo real (Open-Meteo API)
-  useEffect(() => {
-    let isMounted = true;
-    const fetchEnvironment = async () => {
-      try {
-        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=19.4326&longitude=-99.1332&current=temperature_2m,relative_humidity_2m');
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        if (isMounted && data.current) {
-          const t = data.current.temperature_2m;
-          const h = data.current.relative_humidity_2m;
-          setWeatherData({
-            temp: `${t}°C`,
-            humidity: `${h}%`,
-            status: t > 26 ? '🔥 Calor (Hidrátate)' : t < 15 ? '🧊 Calentamiento extra' : '⚡ Clima Óptimo'
-          });
-        }
-      } catch (err) {
-        // Fallback robusto para Vercel y offline sin romper la UI
-        if (isMounted) {
-          setWeatherData({ temp: '21.8°C', humidity: '45%', status: '⚡ Clima Óptimo' });
-        }
-      } finally {
-        if (isMounted) setLoadingWeather(false);
-      }
-    };
-
-    fetchEnvironment();
-    return () => { isMounted = false; };
-  }, []);
-
-  const toggleAudioCoach = () => {
-    const nextState = !audioCoachActive;
-    setAudioCoachActive(nextState);
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      if (nextState) {
-        const u = new SpeechSynthesisUtterance("Coach biomecánico de voz activado en modo profesional. ¡Listo!");
-        u.lang = 'es-ES';
-        window.speechSynthesis.speak(u);
-      }
-    }
-  };
-
   return (
     <header className="main-header" style={{
       justifyContent: 'space-between',
       padding: '16px 36px',
-      background: 'rgba(10, 14, 17, 0.94)',
+      background: 'rgba(12, 16, 22, 0.90)',
       backdropFilter: 'blur(24px)',
-      borderBottom: '1px solid var(--border-color, #22272e)',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
       position: 'sticky',
       top: 0,
       zIndex: 1000,
       display: 'flex',
       alignItems: 'center',
       gap: '20px',
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
     }}>
-      {/* Brand & Hamburger (Sin Navbar Arriba, Puro Telemetría INK Games) */}
+      {/* Sección Izquierda: Botón Menú Lateral + Identidad del Proyecto */}
       <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {activeMenu === 'live' && (
           <button
@@ -72,122 +25,133 @@ export default function Header({ onToggleSidebar, activeMenu }) {
             onClick={onToggleSidebar}
             aria-label="Abrir panel de control lateral"
             style={{
-              background: '#14181d',
-              border: '1px solid #22272e',
-              color: 'var(--accent-green, #a1ff4f)',
-              borderRadius: '9999px',
-              padding: '8px 16px',
-              fontSize: '1.1rem',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: '#00f0ff',
+              borderRadius: '12px',
+              padding: '9px 15px',
+              fontSize: '1.2rem',
               cursor: 'pointer',
               fontWeight: 800,
-              transition: 'all 0.3s ease'
+              transition: 'all 0.25s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(0, 240, 255, 0.15)';
+              e.currentTarget.style.borderColor = '#00f0ff';
+              e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 240, 255, 0.3)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             ☰
           </button>
         )}
+
         <div className="brand-icon" style={{
-          width: '48px',
-          height: '48px',
+          width: '46px',
+          height: '46px',
           borderRadius: '14px',
-          background: 'var(--accent-green, #a1ff4f)',
+          background: 'linear-gradient(135deg, #00f0ff 0%, #0080ff 100%)',
           color: '#000000',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '1.6rem',
+          fontSize: '1.5rem',
           fontWeight: 900,
-          boxShadow: '0 0 25px rgba(161, 255, 79, 0.4)',
+          boxShadow: '0 0 24px rgba(0, 240, 255, 0.4)',
           flexShrink: 0
-        }}>⚡</div>
+        }}>📊</div>
+
         <div className="brand-text">
           <h1 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '1.45rem',
+            fontFamily: 'var(--font-display, Inter, sans-serif)',
+            fontSize: '1.38rem',
             fontWeight: 900,
-            letterSpacing: '-0.03em',
+            letterSpacing: '-0.02em',
             textTransform: 'uppercase',
             color: '#ffffff',
             margin: 0,
-            lineHeight: 1.1
-          }}>AI BIOMETRICS // INK ATHLETE</h1>
+            lineHeight: 1.15
+          }}>
+            BIOMETRÍA IA · ANÁLISIS DE POSTURA
+          </h1>
           <p style={{
-            fontSize: '0.75rem',
-            color: 'var(--text-dim, #8b949e)',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            margin: 0
-          }}>Corrección Postural en Vivo 60 FPS · Inteligencia Artificial Biomecánica</p>
-        </div>
-      </div>
-
-      {/* Telemetría Ambiental API en Tiempo Real (Reemplaza a la vieja barra de navegación aquí) */}
-      <div className="api-weather-pill" style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        background: '#14181d',
-        border: '1px solid rgba(0, 240, 255, 0.35)',
-        padding: '8px 20px',
-        borderRadius: '9999px',
-        boxShadow: '0 0 20px rgba(0, 240, 255, 0.12)'
-      }}>
-        <span style={{ fontSize: '1.1rem' }}>🌦️</span>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: '0.68rem', color: '#8b949e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            API AMBIENTE ESTUDIO (OPEN-METEO)
-          </span>
-          <span style={{ fontSize: '0.84rem', color: '#00f0ff', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
-            {loadingWeather ? '⏳ Sincronizando API...' : `${weatherData.temp} · ${weatherData.humidity} · ${weatherData.status}`}
-          </span>
-        </div>
-      </div>
-
-      {/* Racha & Coach de Voz */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-        <button
-          onClick={toggleAudioCoach}
-          title="Activar o desactivar motivación y corrección por voz"
-          style={{
-            background: audioCoachActive ? 'rgba(161, 255, 79, 0.18)' : '#14181d',
-            border: `1px solid ${audioCoachActive ? 'var(--accent-green, #a1ff4f)' : '#22272e'}`,
-            color: audioCoachActive ? 'var(--accent-green, #a1ff4f)' : '#8b949e',
-            padding: '9px 18px',
-            borderRadius: '9999px',
             fontSize: '0.78rem',
-            fontWeight: 900,
-            cursor: 'pointer',
+            color: '#00f0ff',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            margin: '3px 0 0 0',
+            fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            boxShadow: audioCoachActive ? '0 0 20px rgba(161, 255, 79, 0.3)' : 'none',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <span>{audioCoachActive ? '🔊 VOZ IA: ON' : '🔇 VOZ IA: OFF'}</span>
-        </button>
-
-        <div className="streak-pill" style={{
-          background: '#14181d',
-          color: 'var(--accent-green, #a1ff4f)',
-          border: '1px solid var(--accent-green, #a1ff4f)',
-          padding: '8px 18px',
-          borderRadius: '9999px',
-          fontSize: '0.78rem',
-          fontWeight: 900,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          boxShadow: '0 0 20px rgba(161, 255, 79, 0.25)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em'
-        }}>
-          <span>🔥 RACHA: 5 DÍAS</span>
+            gap: '6px'
+          }}>
+            <span>🎓</span> ESTUDIANTES DE CIENCIAS DE DATOS E INTELIGENCIA ARTIFICIAL
+          </p>
         </div>
       </div>
+
+      {/* Sección Derecha: Flecha / Badge "Cambiando al Ecuador mira" */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div className="ecuador-badge" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(0, 240, 255, 0.14) 100%)',
+          border: '1px solid #10b981',
+          padding: '10px 22px',
+          borderRadius: '9999px',
+          boxShadow: '0 0 26px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255,255,255,0.15)',
+          transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          cursor: 'default'
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+          e.currentTarget.style.boxShadow = '0 6px 30px rgba(16, 185, 129, 0.45), inset 0 1px 0 rgba(255,255,255,0.25)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.transform = '';
+          e.currentTarget.style.boxShadow = '0 0 26px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255,255,255,0.15)';
+        }}
+        >
+          <span style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: '#10b981',
+            boxShadow: '0 0 10px #10b981',
+            display: 'inline-block',
+            animation: 'pulseEcuador 1.5s infinite ease-in-out'
+          }} />
+          <span style={{
+            fontSize: '0.88rem',
+            color: '#ffffff',
+            fontWeight: 900,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            🇪🇨 CAMBIANDO AL ECUADOR <span style={{ color: '#00f0ff', fontSize: '1.1rem', transition: 'transform 0.2s ease' }}>➔</span> MIRA
+          </span>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes pulseEcuador {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.3); opacity: 0.6; }
+        }
+      `}</style>
     </header>
   );
 }
