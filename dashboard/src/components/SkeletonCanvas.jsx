@@ -663,8 +663,9 @@ export default function SkeletonCanvas({
   }, [seq, mpReady, frameIdx, isWebcam, webcamActive, webcamError, videoSrc, isPlaying]);
 
   return (
-    <div className="canvas-container">
-      <canvas ref={canvasRef} width={640} height={420} />
+    <div className="canvas-container" style={{ position: 'relative', borderRadius: '18px', overflow: 'hidden', boxShadow: '0 12px 36px rgba(0,0,0,0.5)' }}>
+      <canvas ref={canvasRef} width={640} height={420} style={{ display: 'block', width: '100%', height: 'auto', background: '#080b11' }} />
+      
       {/* Video oculto para archivo subido por el usuario */}
       {seq.isUploadedVideo && (
         <video
@@ -680,12 +681,100 @@ export default function SkeletonCanvas({
           style={{ display: 'none' }}
         />
       )}
-      <div className="canvas-controls">
-        <button className="btn" onClick={onTogglePlay}>
-          {isPlaying ? '⏸ Pausar' : '▶ Reproducir'}
-        </button>
-        <div className="slider-wrapper">
-          <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>Frame:</span>
+
+      {/* Barra de Controles de Reproducción y Fotogramas (Estilo Dock Telemetría) */}
+      <div className="canvas-controls" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '14px 20px',
+        background: 'rgba(15, 20, 28, 0.92)',
+        backdropFilter: 'blur(16px)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        gap: '16px',
+        flexWrap: 'wrap'
+      }}>
+        {/* Controles de Reproducción */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => onFrameChange((frameIdx - 1 + 46) % 46)}
+            disabled={seq.isUploadedVideo || isPlaying}
+            title="Anterior fotograma (-1 frame)"
+            style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: '#ffffff',
+              borderRadius: '10px',
+              padding: '8px 12px',
+              cursor: (seq.isUploadedVideo || isPlaying) ? 'not-allowed' : 'pointer',
+              opacity: (seq.isUploadedVideo || isPlaying) ? 0.4 : 1,
+              transition: 'all 0.2s ease',
+              fontFamily: 'var(--font-mono)'
+            }}
+          >
+            ⏮
+          </button>
+
+          <button
+            onClick={onTogglePlay}
+            style={{
+              background: isPlaying
+                ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(245, 158, 11, 0.2))'
+                : 'linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(16, 185, 129, 0.2))',
+              border: isPlaying ? '1px solid #ef4444' : '1px solid #00f0ff',
+              color: '#ffffff',
+              borderRadius: '12px',
+              padding: '9px 18px',
+              fontWeight: 800,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: isPlaying ? '0 0 16px rgba(239, 68, 68, 0.3)' : '0 0 16px rgba(0, 240, 255, 0.3)',
+              transition: 'all 0.25s ease',
+              fontFamily: 'var(--font-mono)'
+            }}
+          >
+            <span>{isPlaying ? '⏸' : '▶'}</span>
+            <span>{isPlaying ? 'PAUSAR' : 'REPRODUCIR'}</span>
+          </button>
+
+          <button
+            onClick={() => onFrameChange((frameIdx + 1) % 46)}
+            disabled={seq.isUploadedVideo || isPlaying}
+            title="Siguiente fotograma (+1 frame)"
+            style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: '#ffffff',
+              borderRadius: '10px',
+              padding: '8px 12px',
+              cursor: (seq.isUploadedVideo || isPlaying) ? 'not-allowed' : 'pointer',
+              opacity: (seq.isUploadedVideo || isPlaying) ? 0.4 : 1,
+              transition: 'all 0.2s ease',
+              fontFamily: 'var(--font-mono)'
+            }}
+          >
+            ⏭
+          </button>
+        </div>
+
+        {/* Timeline Slider & Contador de Fotogramas */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          flex: 1,
+          minWidth: '220px',
+          background: 'rgba(0, 0, 0, 0.35)',
+          padding: '8px 16px',
+          borderRadius: '12px',
+          border: '1px solid rgba(255, 255, 255, 0.05)'
+        }}>
+          <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+            TIMELINE:
+          </span>
           <input
             type="range"
             min="0"
@@ -693,10 +782,26 @@ export default function SkeletonCanvas({
             value={frameIdx}
             onChange={(e) => onFrameChange(Number(e.target.value))}
             disabled={seq.isUploadedVideo}
+            style={{
+              flex: 1,
+              accentColor: '#00f0ff',
+              cursor: seq.isUploadedVideo ? 'not-allowed' : 'pointer',
+              height: '6px'
+            }}
           />
-          <span style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-            {seq.isUploadedVideo ? '📁 LIVE IA' : `${(frameIdx % 46) + 1} / 46`}
-          </span>
+          <div style={{
+            background: 'rgba(0, 240, 255, 0.12)',
+            border: '1px solid #00f0ff',
+            color: '#00f0ff',
+            padding: '4px 10px',
+            borderRadius: '8px',
+            fontSize: '0.8rem',
+            fontWeight: 800,
+            fontFamily: 'var(--font-mono)',
+            whiteSpace: 'nowrap'
+          }}>
+            {seq.isUploadedVideo ? '📁 STREAM EN VIVO' : `FRAME ${(frameIdx % 46) + 1} / 46`}
+          </div>
         </div>
       </div>
     </div>

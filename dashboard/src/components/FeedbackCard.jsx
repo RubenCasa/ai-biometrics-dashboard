@@ -152,123 +152,232 @@ export default function FeedbackCard({ seq }) {
 
   return (
     <div className="card feedback-box" style={{
-      borderRadius: '18px',
-      padding: '24px',
-      background: 'rgba(15, 23, 42, 0.82)',
-      border: `1px solid ${progressColor}50`,
-      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
+      borderRadius: '22px',
+      padding: '26px',
+      background: 'linear-gradient(145deg, rgba(16, 22, 34, 0.90) 0%, rgba(10, 14, 22, 0.95) 100%)',
+      backdropFilter: 'blur(20px)',
+      border: `1px solid ${progressColor}45`,
+      boxShadow: `0 16px 40px rgba(0, 0, 0, 0.55), 0 0 24px ${progressColor}15`,
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      color: '#ffffff'
+      color: '#ffffff',
+      transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
     }}>
       <div>
         {/* Cabecera del diagnóstico */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', gap: '12px', flexWrap: 'wrap' }}>
           <div>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: progressColor, letterSpacing: '0.5px' }}>
-              ● DIAGNÓSTICO EN TIEMPO REAL
-            </span>
-            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '4px 0 0 0', color: '#ffffff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: progressColor,
+                boxShadow: `0 0 10px ${progressColor}`,
+                display: 'inline-block'
+              }} />
+              <span style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', color: progressColor, letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                DIAGNÓSTICO EN TIEMPO REAL
+              </span>
+            </div>
+            <h3 style={{
+              fontSize: '1.42rem',
+              fontWeight: 900,
+              margin: '6px 0 0 0',
+              color: '#ffffff',
+              letterSpacing: '-0.02em'
+            }}>
               {seq.nombre}
             </h3>
           </div>
-          <span style={{
-            background: `${progressColor}20`,
+          <div style={{
+            background: `${progressColor}18`,
             border: `1px solid ${progressColor}`,
             color: progressColor,
-            fontWeight: 800,
-            fontSize: '0.78rem',
-            padding: '5px 12px',
-            borderRadius: '20px'
+            fontWeight: 900,
+            fontSize: '0.8rem',
+            padding: '6px 14px',
+            borderRadius: '9999px',
+            boxShadow: `0 0 16px ${progressColor}35`,
+            fontFamily: 'var(--font-mono)',
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
           }}>
-            CLASE {seq.clase} ({seq.clase === 0 ? 'ÓPTIMO' : 'ALERTA'})
-          </span>
+            <span>CLASE {seq.clase}</span>
+            <span>·</span>
+            <span>{seq.clase === 0 ? 'ÓPTIMO' : 'ALERTA'}</span>
+          </div>
         </div>
 
-        {/* Barra de Calidad Postural */}
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 700, marginBottom: '6px' }}>
-            <span style={{ color: '#cbd5e1' }}>Índice de Calidad Postural (AI Score)</span>
-            <span style={{ color: progressColor }}>{confPercentage}%</span>
+        {/* Barra de Calidad Postural (AI Score) */}
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.35)',
+          padding: '14px 18px',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          marginBottom: '22px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.82rem', color: '#cbd5e1', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Índice de Calidad Postural (AI Score)
+            </span>
+            <span style={{
+              fontSize: '1.15rem',
+              color: progressColor,
+              fontWeight: 900,
+              fontFamily: 'var(--font-mono)',
+              textShadow: `0 0 12px ${progressColor}`
+            }}>
+              {confPercentage}%
+            </span>
           </div>
-          <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.08)', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.08)', borderRadius: '999px', overflow: 'hidden', padding: '2px' }}>
             <div style={{
               width: `${confPercentage}%`,
               height: '100%',
               background: progressColor,
-              borderRadius: '10px',
-              transition: 'width 0.4s ease'
+              borderRadius: '999px',
+              transition: 'width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
+              boxShadow: `0 0 14px ${progressColor}`
             }} />
           </div>
         </div>
 
-        {/* Caja de Retroalimentación en Español */}
+        {/* Caja de Retroalimentación en Español (Instrucción Entrenador IA) */}
         <div style={{
-          background: 'rgba(0, 0, 0, 0.4)',
+          background: 'rgba(0, 0, 0, 0.5)',
+          border: `1px solid ${progressColor}40`,
           borderLeft: `4px solid ${progressColor}`,
-          borderRadius: '12px',
-          padding: '16px',
-          marginBottom: '20px'
+          borderRadius: '16px',
+          padding: '18px',
+          marginBottom: '22px',
+          boxShadow: 'inset 0 2px 12px rgba(0,0,0,0.3)'
         }}>
-          <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-            📢 Instrucción del Entrenador IA
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '0.78rem',
+            color: '#94a3b8',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '8px',
+            fontFamily: 'var(--font-mono)'
+          }}>
+            <span>📢 INSTRUCCIÓN DEL ENTRENADOR IA</span>
           </div>
-          <p style={{ fontSize: '0.92rem', color: '#f8fafc', lineHeight: 1.5, margin: 0, fontWeight: 500 }}>
+          <p style={{
+            fontSize: '0.95rem',
+            color: '#f8fafc',
+            lineHeight: 1.6,
+            margin: 0,
+            fontWeight: 600,
+            letterSpacing: '0.01em'
+          }}>
             {seq.feedback}
           </p>
         </div>
 
         {/* Puntos de Control Biomecánico */}
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' }}>
-            🛡️ Puntos de Control Biomecánico
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{
+            fontSize: '0.8rem',
+            color: '#94a3b8',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '12px',
+            fontFamily: 'var(--font-mono)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>🛡️ PUNTOS DE CONTROL BIOMECÁNICO</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {checklistItems.map((item, idx) => (
               <div key={idx} style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                fontSize: '0.84rem',
-                color: item.ok ? '#cbd5e1' : '#fca5a5',
-                background: item.ok ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.08)',
-                padding: '8px 12px',
-                borderRadius: '8px'
+                gap: '12px',
+                fontSize: '0.88rem',
+                color: item.ok ? '#e2e8f0' : '#fca5a5',
+                background: item.ok ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.12)',
+                border: `1px solid ${item.ok ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`,
+                padding: '12px 16px',
+                borderRadius: '14px',
+                fontWeight: 600,
+                transition: 'transform 0.2s ease, background 0.2s ease'
               }}>
-                <span style={{ fontSize: '1rem' }}>{item.ok ? '✔' : '⚠'}</span>
-                <span>{item.text}</span>
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  background: item.ok ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                  color: item.ok ? '#10b981' : '#ef4444',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 900,
+                  flexShrink: 0,
+                  fontSize: '0.85rem'
+                }}>
+                  {item.ok ? '✔' : '⚠'}
+                </div>
+                <span style={{ lineHeight: 1.4 }}>{item.text}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Botón de Síntesis Neural IA Libre */}
+      {/* Botón de Síntesis Neural IA Libre y Moderno */}
       <button
         onClick={speakFeedback}
         disabled={isSpeaking}
         style={{
           width: '100%',
-          padding: '13px',
-          borderRadius: '12px',
-          border: isSpeaking ? '1px solid #a1ff4f' : '1px solid rgba(56, 189, 248, 0.4)',
+          padding: '16px',
+          borderRadius: '16px',
+          border: isSpeaking ? '1px solid #10b981' : '1px solid #00f0ff',
           background: isSpeaking
-            ? 'linear-gradient(135deg, rgba(161, 255, 79, 0.25), rgba(0, 240, 255, 0.2))'
-            : 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(16, 185, 129, 0.12))',
+            ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(0, 240, 255, 0.25) 100%)'
+            : 'linear-gradient(135deg, rgba(0, 240, 255, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%)',
           color: '#ffffff',
-          fontSize: '0.88rem',
-          fontWeight: 800,
+          fontSize: '0.92rem',
+          fontWeight: 900,
           cursor: isSpeaking ? 'wait' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px',
-          transition: 'all 0.2s ease',
-          boxShadow: isSpeaking ? '0 0 15px rgba(161, 255, 79, 0.4)' : 'none'
+          gap: '10px',
+          transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          boxShadow: isSpeaking
+            ? '0 0 28px rgba(16, 185, 129, 0.45), inset 0 1px 0 rgba(255,255,255,0.2)'
+            : '0 0 22px rgba(0, 240, 255, 0.28), inset 0 1px 0 rgba(255,255,255,0.15)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          fontFamily: 'var(--font-mono)'
+        }}
+        onMouseEnter={e => {
+          if (!isSpeaking) {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 240, 255, 0.45), inset 0 1px 0 rgba(255,255,255,0.25)';
+          }
+        }}
+        onMouseLeave={e => {
+          if (!isSpeaking) {
+            e.currentTarget.style.transform = '';
+            e.currentTarget.style.boxShadow = '0 0 22px rgba(0, 240, 255, 0.28), inset 0 1px 0 rgba(255,255,255,0.15)';
+          }
         }}
       >
-        <span>{statusText}</span>
+        <span style={{ fontSize: '1.2rem' }}>{isSpeaking ? '⚡' : '🔊'}</span>
+        <span>{isSpeaking ? 'ENTRENADOR IA HABLANDO...' : statusText}</span>
       </button>
     </div>
   );
