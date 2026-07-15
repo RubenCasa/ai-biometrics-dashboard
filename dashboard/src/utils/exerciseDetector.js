@@ -240,24 +240,27 @@ export class ExerciseDetector {
 
     // ── Clasificación robusta a rotación de cámara (basada puramente en la biomecánica) ──
 
-    // 1. SITUP (Abdominal): Cadera se flexiona con rodillas estáticas y flexionadas (<150)
-    const isSitup = (hipVar > 15 || (currentSmoothed === 'SITUP (Abdominal)' && avgHip < 150)) && avgKnee < 150 && kneeVar < 20;
-    
-    // 2. CLEAN & JERK: Fuerte flexión simultánea de codos y rodillas
-    const isClean = (kneeVar > 15 && elbowVar > 15) || (currentSmoothed === 'CLEAN & JERK (Levantamiento)' && (avgKnee < 160 || avgElbow < 150));
-    
-    // 3. SQUAT (Sentadilla): Movimiento en rodilla, codos relativamente quietos (para no confundir con Clean)
-    const isSquat = (kneeVar > 15 || (currentSmoothed === 'SQUAT (Sentadilla)' && avgKnee < 160)) && elbowVar < 20;
-    
-    // 4. PUSHUP (Flexión): Movimiento en codos, piernas y cadera estiradas (>140)
-    const isPushup = (elbowVar > 12 || (currentSmoothed === 'PUSHUP (Flexión)' && avgElbow < 160)) && avgKnee > 140 && avgHip > 140 && kneeVar < 20;
-    
-    // 5. BENCH PRESS: Movimiento en codos, rodillas estáticas y flexionadas (<150), cadera estirada (>140)
-    const isBench = (elbowVar > 12 || (currentSmoothed === 'BENCH PRESS (Press de Banca)' && avgElbow < 160)) && avgKnee < 150 && avgHip > 140 && kneeVar < 20;
+    // 1. SQUAT (Sentadilla): Movimiento principal en rodilla (>12), brazos quietos (<25)
+    // Usamos histéresis solo si está en la parte baja de la sentadilla (<160)
+    const isSquat = (kneeVar > 12 || (currentSmoothed === 'SQUAT (Sentadilla)' && avgKnee < 160)) && elbowVar < 25;
 
-    if (isSitup) return { name: 'SITUP (Abdominal)', confidence: Math.min(0.96, 0.65 + hipVar / 50) };
-    if (isClean) return { name: 'CLEAN & JERK (Levantamiento)', confidence: Math.min(0.92, 0.60 + kneeVar/100 + elbowVar/100) };
+    // 2. CLEAN & JERK: Fuerte flexión simultánea de codos y rodillas
+    const isClean = (kneeVar > 15 && elbowVar > 20) || (currentSmoothed === 'CLEAN & JERK (Levantamiento)' && (avgKnee < 160 || avgElbow < 150));
+
+    // 3. SITUP (Abdominal): Cadera se flexiona con rodillas estáticas y dobladas
+    // Exigimos que la rodilla varíe muy poco (<10) para no confundir con sentadilla lenta
+    const isSitup = (hipVar > 12 || (currentSmoothed === 'SITUP (Abdominal)' && avgHip < 140)) && avgKnee < 140 && kneeVar < 10;
+    
+    // 4. PUSHUP (Flexión): Movimiento en codos, piernas y cadera estiradas (>130) y estáticas
+    const isPushup = (elbowVar > 10 || (currentSmoothed === 'PUSHUP (Flexión)' && avgElbow < 160)) && avgKnee > 140 && avgHip > 130 && kneeVar < 12 && hipVar < 15;
+    
+    // 5. BENCH PRESS: Movimiento en codos, rodillas estáticas y flexionadas (<150), cadera estirada (>130)
+    const isBench = (elbowVar > 10 || (currentSmoothed === 'BENCH PRESS (Press de Banca)' && avgElbow < 160)) && avgKnee < 150 && avgHip > 130 && kneeVar < 12 && hipVar < 15;
+
+    // Evaluamos en orden de prioridad de movimiento para evitar colisiones
     if (isSquat) return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + kneeVar / 50) };
+    if (isClean) return { name: 'CLEAN & JERK (Levantamiento)', confidence: Math.min(0.92, 0.60 + kneeVar/100 + elbowVar/100) };
+    if (isSitup) return { name: 'SITUP (Abdominal)', confidence: Math.min(0.96, 0.65 + hipVar / 50) };
     if (isPushup) return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.95, 0.60 + elbowVar / 50) };
     if (isBench) return { name: 'BENCH PRESS (Press de Banca)', confidence: Math.min(0.92, 0.60 + elbowVar / 50) };
 
