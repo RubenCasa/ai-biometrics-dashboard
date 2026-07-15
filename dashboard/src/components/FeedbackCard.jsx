@@ -17,46 +17,63 @@ export default function FeedbackCard({ seq }) {
 
   const phaseLabel = seq.phase === 'up' ? '⬆ SUBIDA' : seq.phase === 'down' ? '⬇ BAJADA' : '— ESTABLE';
 
-  // Síntesis Neural + Coach de Gimnasio 100% Humano y Directo (Voz natural sin tecnicismos ni porcentajes)
+  // Síntesis Neural + Coach de Gimnasio 100% Humano y Dinámico según el video subido y ejercicio detectado
   const speakFeedback = async () => {
     if (isSpeaking) return;
     setIsSpeaking(true);
     setStatusText('⚡ COACH HABLANDO...');
 
     try {
-      // 1. Diagnóstico Puro de Coach de Gimnasio (Comandos directos, enérgicos y sin tecnicismos ni porcentajes aburridos)
+      // 1. Diagnóstico Dinámico y Preciso de Coach según el Video Subido y Ejercicio Detectado
       let aiCoachAdvice = '';
-      const actionLower = (seq.action || '').toLowerCase();
+      const rawExercise = seq.exercise || seq.action || seq.nombre || 'ejercicio';
+      const actionLower = rawExercise.toLowerCase();
+      
+      // Limpiamos el nombre para cuando es un video nuevo o ejercicio general
+      const cleanName = rawExercise.split('(')[0].replace(/[0-9-_]/g, ' ').trim() || 'movimiento';
 
       if (seq.clase === 0) {
+        // ÓPTIMO EN EL VIDEO SUBIDO / EN VIVO
         if (actionLower.includes('sentadilla') || actionLower.includes('squat')) {
-          aiCoachAdvice = `¡Eso es, rompe el paralelo y empuja fuerte con los talones! ¡Excelente profundidad, sigue así!`;
+          aiCoachAdvice = `¡Excelente profundidad en la sentadilla! Rompes el paralelo perfecto y empujas con fuerza con los talones, ¡sigue así!`;
         } else if (actionLower.includes('flexi') || actionLower.includes('pushup')) {
-          aiCoachAdvice = `¡Buenísima flexión! ¡Espalda recta en tabla y codo firme, sigue empujando con todo!`;
+          aiCoachAdvice = `¡Buenísima flexión en el video! Espalda en tabla recta y gran rango de recorrido, ¡sigue empujando con todo!`;
         } else if (actionLower.includes('abdomin') || actionLower.includes('situp')) {
-          aiCoachAdvice = `¡Perfecta contracción! ¡Sube exhalando con fuerza y controla el descenso!`;
+          aiCoachAdvice = `¡Perfecta contracción abdominal! Sube exhalando y controla el descenso sin tirar del cuello, ¡excelente ritmo!`;
+        } else if (actionLower.includes('lunge') || actionLower.includes('zancada')) {
+          aiCoachAdvice = `¡Gran estabilidad en la zancada! Rodilla firme a noventa grados y tronco perfectamente erguido, ¡muy buen equilibrio!`;
+        } else if (actionLower.includes('deadlift') || actionLower.includes('peso muerto')) {
+          aiCoachAdvice = `¡Espalda neutra y excelente bisagra de cadera en este peso muerto! ¡Perfecto control de la carga!`;
+        } else if (actionLower.includes('plank') || actionLower.includes('plancha')) {
+          aiCoachAdvice = `¡Excelente plancha! Cuerpo alineado en línea recta y core firme como una roca, ¡mantén la tensión!`;
         } else {
-          aiCoachAdvice = `¡Excelente técnica y ritmo constante! ¡Mantén la postura firme y no pierdas la concentración, vamos!`;
+          aiCoachAdvice = `¡Excelente técnica detectada en tu ${cleanName}! Mantén la firmeza, el control articular y ese ritmo constante, ¡vamos!`;
         }
       } else if (seq.clase === 1) {
+        // ALERTA DE ESPALDA / TRONCO EN EL VIDEO SUBIDO
         if (actionLower.includes('sentadilla') || actionLower.includes('squat')) {
-          aiCoachAdvice = `¡Saca pecho ya! ¡Estás inclinando demasiado la espalda, aprieta el core y endereza el tronco arriba!`;
+          aiCoachAdvice = `¡Saca pecho ya en la sentadilla! Estás inclinando demasiado el tronco hacia adelante. Aprieta el core y baja controlando la espalda!`;
         } else if (actionLower.includes('flexi') || actionLower.includes('pushup')) {
-          aiCoachAdvice = `¡No dejes caer la cadera! ¡Activa glúteos y abdomen para alinear toda la columna!`;
+          aiCoachAdvice = `¡No dejes caer la cadera ni arques la lumbar! Activa glúteos y abdomen para mantener la espalda completamente recta en la flexión!`;
         } else if (actionLower.includes('abdomin') || actionLower.includes('situp')) {
-          aiCoachAdvice = `¡No jales el cuello con las manos! ¡La fuerza sale pura del abdomen, levanta el pecho!`;
+          aiCoachAdvice = `¡No jales el cuello con las manos! La contracción debe salir pura del core abdominal, mantén el mentón elevado!`;
+        } else if (actionLower.includes('lunge') || actionLower.includes('zancada')) {
+          aiCoachAdvice = `¡Endereza el tronco en la zancada! Evita inclinarte hacia adelante y mantén la columna vertical con la cadera!`;
+        } else if (actionLower.includes('deadlift') || actionLower.includes('peso muerto')) {
+          aiCoachAdvice = `¡Cuidado con curvar la espalda en el peso muerto! Saca pecho, retrae escápulas y aprieta fuerte la zona lumbar antes de subir!`;
         } else {
-          aiCoachAdvice = `¡Oye, corrige la postura! ¡Estás perdiendo la línea del tronco, activa el abdomen ya!`;
+          aiCoachAdvice = `¡Atención con la postura de tu espalda en ${cleanName}! Activa tu zona media del core y endereza el tronco de inmediato!`;
         }
       } else {
-        aiCoachAdvice = `¡Ojo con esas articulaciones! ¡Estabiliza las rodillas y mantén el equilibrio durante todo el recorrido!`;
-      }
-
-      // Si hay un consejo biomecánico en vivo específico del detector y estamos en alerta, lo decimos con autoridad de entrenador
-      if (seq.feedback && !seq.feedback.includes('Analizando') && !seq.feedback.includes('Esperando') && seq.clase !== 0) {
-        const fraseLimpia = seq.feedback.replace(/✅|⚠️|ALERTA en Fotograma #\d+:?/gi, '').replace(/\([^)]*\)/g, '').trim();
-        if (fraseLimpia.length > 5) {
-          aiCoachAdvice = `¡Atención! ${fraseLimpia} ¡Aprieta el core y corrige la técnica de inmediato!`;
+        // ALERTA DE RODILLAS / EXTREMIDADES EN EL VIDEO SUBIDO
+        if (actionLower.includes('sentadilla') || actionLower.includes('squat')) {
+          aiCoachAdvice = `¡Cuidado con las rodillas al bajar! No dejes que colapsen hacia adentro, empuja las rodillas hacia afuera alineándolas con los pies!`;
+        } else if (actionLower.includes('lunge') || actionLower.includes('zancada')) {
+          aiCoachAdvice = `¡Estabiliza la rodilla delantera en la zancada! Evita que tambalee o se vaya hacia adentro, mantén firme el paso!`;
+        } else if (actionLower.includes('flexi') || actionLower.includes('pushup')) {
+          aiCoachAdvice = `¡Ojo con la alineación de tus codos y hombros! Controla la fase de bajada sin desestabilizar los brazos!`;
+        } else {
+          aiCoachAdvice = `¡Ojo con la estabilidad de tus articulaciones y extremidades en ${cleanName}! Controla bien el recorrido y el equilibrio del cuerpo!`;
         }
       }
 
