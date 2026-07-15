@@ -190,12 +190,10 @@ export default function ChartsPanel({ seq }) {
     
     const ex = seq.exercise || seq.action || '';
     const exUpper = ex.toUpperCase();
-    if (exUpper.includes('PUSHUP') || exUpper.includes('PLANCHA') || exUpper.includes('PLANK')) {
+    if (exUpper.includes('PUSHUP') || exUpper.includes('BENCH PRESS')) {
       jointName = 'Codo'; keyL = 'elbowL'; keyR = 'elbowR'; fallbackAngle = 160;
     } else if (exUpper.includes('SITUP') || exUpper.includes('ABDOMINAL')) {
       jointName = 'Cadera'; keyL = 'hipL'; keyR = 'hipR'; fallbackAngle = 120;
-    } else if (exUpper.includes('JUMPING JACK')) {
-      jointName = 'Hombro'; keyL = 'shoulderL'; keyR = 'shoulderR'; fallbackAngle = 20;
     }
 
     if (hasRealData) {

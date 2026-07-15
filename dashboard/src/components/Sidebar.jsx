@@ -37,9 +37,31 @@ export default function Sidebar({
       <div className="card-title" style={{ color: 'var(--accent-green)', fontSize: '1rem', letterSpacing: '-0.02em' }}>
         <span>⚡ INFERENCIA EN VIVO</span>
       </div>
-      <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: '18px', lineHeight: 1.4 }}>
+      <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: '14px', lineHeight: 1.4 }}>
         Sube cualquier archivo de video (MP4/MOV) para corrección y análisis biomecánico en tiempo real con IA:
       </p>
+
+      {/* Nota de modelos soportados */}
+      <div style={{
+        background: 'rgba(255, 183, 3, 0.1)',
+        border: '1px solid rgba(255, 183, 3, 0.3)',
+        borderRadius: '12px',
+        padding: '12px',
+        marginBottom: '18px',
+        fontSize: '0.74rem',
+        color: '#cbd5e1',
+        lineHeight: 1.5
+      }}>
+        <strong style={{ color: '#ffb703', display: 'block', marginBottom: '4px' }}>⚠️ MODELOS ENTRENADOS:</strong>
+        Por el momento nuestro modelo de IA está entrenado exclusivamente para ejecutar:
+        <span style={{ color: 'var(--accent-green, #a1ff4f)', fontWeight: 'bold', display: 'block', marginTop: '4px' }}>
+          • Squat (Sentadilla)<br/>
+          • Pushup (Flexión)<br/>
+          • Situp (Abdominal)<br/>
+          • Bench Press (Press de Banca)<br/>
+          • Clean & Jerk (Levantamiento)
+        </span>
+      </div>
 
       {/* Botones principales INK Pill */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>

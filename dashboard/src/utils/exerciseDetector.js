@@ -226,84 +226,47 @@ export class ExerciseDetector {
   _detectExercise(m) {
     const recent = this.buffer.slice(-20);
 
-    // Rango de movimiento vertical de cadera (últimos 20 frames)
-    const hipYs = recent.map(r => r.midHipY);
-    const hipRange = Math.max(...hipYs) - Math.min(...hipYs);
-
     // Promedio de ángulos
     const avgKnee = recent.reduce((s, r) => s + (r.kneeAngleL + r.kneeAngleR) / 2, 0) / recent.length;
     const avgHip = recent.reduce((s, r) => s + (r.hipAngleL + r.hipAngleR) / 2, 0) / recent.length;
     const avgElbow = recent.reduce((s, r) => s + (r.elbowAngleL + r.elbowAngleR) / 2, 0) / recent.length;
-    const avgBodyDY = recent.reduce((s, r) => s + r.bodyDY, 0) / recent.length;
-    const avgTrunk = recent.reduce((s, r) => s + r.trunkAngle, 0) / recent.length;
 
-    // Variación de ángulo de rodilla (indica movimiento cíclico)
-    const kneeVariation = Math.max(...recent.map(r => (r.kneeAngleL + r.kneeAngleR) / 2))
-                        - Math.min(...recent.map(r => (r.kneeAngleL + r.kneeAngleR) / 2));
+    // Variaciones de ángulo (rango de movimiento)
+    const getVar = (fn) => Math.max(...recent.map(fn)) - Math.min(...recent.map(fn));
+    
+    const kneeVar = getVar(r => (r.kneeAngleL + r.kneeAngleR) / 2);
+    const hipVar = getVar(r => (r.hipAngleL + r.hipAngleR) / 2);
+    const elbowVar = getVar(r => (r.elbowAngleL + r.elbowAngleR) / 2);
 
-    // ─── Reglas de Clasificación ────────────────────────────────────────────
-    // bodyDY ≈ 1.0  → cuerpo VERTICAL (de pie)
-    // bodyDY ≈ 0.0  → cuerpo HORIZONTAL (acostado)
-    // Este valor es el separador principal entre ejercicios en pie vs en el suelo
+    // ── Clasificación basada SOLO en los 5 modelos entrenados (Invariante a rotación) ──
 
-    // ── GRUPO 1: CUERPO HORIZONTAL (acostado / en el suelo) ──────────────
-    // bodyDY < 0.50 significa que hombros y cadera están casi a la misma altura
-
-    // SITUP (Abdominal): cuerpo horizontal + rodillas dobladas
-    // Persona acostada boca arriba haciendo crunches o sit-ups
-    if (avgBodyDY < 0.50 && avgKnee < 165) {
-      const conf = Math.min(0.97, 0.70 + (0.50 - avgBodyDY) * 0.8 + hipRange * 2);
-      return { name: 'SITUP (Abdominal)', confidence: conf };
+    // 1. PUSHUP (Flexión): Codos se flexionan, rodillas y cadera están relativamente rectas (>140)
+    if (avgKnee > 140 && avgHip > 140 && (elbowVar > 10 || avgElbow < 165)) {
+      return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.95, 0.60 + elbowVar / 50) };
     }
 
-    // PUSHUP (Flexión): cuerpo muy horizontal + codos flexionados
-    if (avgBodyDY < 0.38 && avgElbow < 158) {
-      return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.94, 0.60 + (180 - avgElbow) / 100) };
+    // 2. BENCH PRESS (Press de Banca): Rodillas flexionadas estáticas (pies al piso), cadera recta estática, codos flexionan
+    if (avgKnee < 150 && kneeVar < 15 && avgHip > 140 && hipVar < 15 && (elbowVar > 10 || avgElbow < 165)) {
+      return { name: 'BENCH PRESS (Press de Banca)', confidence: Math.min(0.92, 0.60 + elbowVar / 50) };
     }
 
-    // PLANK (Plancha): cuerpo horizontal y estático (poco movimiento de cadera)
-    if (avgBodyDY < 0.30 && hipRange < 0.04) {
-      return { name: 'PLANK (Plancha)', confidence: 0.85 };
+    // 3. SITUP (Abdominal): Cadera se flexiona, rodillas flexionadas estáticas
+    if (avgKnee < 150 && kneeVar < 20 && (hipVar > 10 || avgHip < 140)) {
+      return { name: 'SITUP (Abdominal)', confidence: Math.min(0.95, 0.60 + hipVar / 50) };
     }
 
-    // ── GRUPO 2: CUERPO VERTICAL (de pie) ────────────────────────────────
-    // bodyDY >= 0.50 significa que la persona está erguida o semi-erguida
-
-    // SQUAT (Sentadilla): cuerpo vertical + rodillas flexionadas + descenso de cadera
-    if (avgBodyDY >= 0.50 && (avgKnee < 160 || hipRange > 0.03) && avgTrunk < 50) {
-      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + hipRange * 2) };
+    // 4. CLEAN & JERK (Levantamiento): Movimiento compuesto fuerte de rodillas y brazos
+    if (kneeVar > 15 && elbowVar > 15 && avgElbow > 120) {
+      return { name: 'CLEAN & JERK (Levantamiento)', confidence: Math.min(0.90, 0.50 + kneeVar/100 + elbowVar/100) };
     }
 
-    // LUNGE (Zancada): asimetría de rodillas + cuerpo erguido
-    const kneeAsymmetry = Math.abs(m.kneeAngleL - m.kneeAngleR);
-    if (kneeAsymmetry > 22 && avgBodyDY >= 0.40 && (m.kneeAngleL < 130 || m.kneeAngleR < 130)) {
-      return { name: 'LUNGE (Zancada)', confidence: Math.min(0.90, 0.55 + kneeAsymmetry / 80) };
+    // 5. SQUAT (Sentadilla): Movimiento principal en rodillas y cadera
+    if (kneeVar > 10 || avgKnee < 160) {
+      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + kneeVar / 50) };
     }
 
-    // DEADLIFT (Peso Muerto): cadera se mueve mucho, tronco inclinado, rodillas casi extendidas
-    if (hipRange > 0.05 && avgBodyDY >= 0.45 && avgTrunk > 15 && avgKnee > 140) {
-      return { name: 'DEADLIFT (Peso Muerto)', confidence: Math.min(0.88, 0.50 + avgTrunk / 50) };
-    }
-
-    // JUMPING JACK: movimiento rápido de hombros
-    const shoulderVar = Math.max(...recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2))
-                      - Math.min(...recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2));
-    if (shoulderVar > 25) {
-      return { name: 'JUMPING JACK', confidence: Math.min(0.88, 0.55 + shoulderVar / 80) };
-    }
-
-    // OVERHEAD PRESS: brazos se extienden hacia arriba
-    if (m.shoulderAngleL > 130 && m.shoulderAngleR > 130 && avgElbow > 120) {
-      return { name: 'PRESS (Prensa)', confidence: 0.82 };
-    }
-
-    // SI ESTÁ EN PIE O PREPARÁNDOSE
-    if (avgBodyDY > 0.25) {
-      return { name: '🟢 EN PIE / PREPARANDO EJERCICIO', confidence: 0.85 };
-    }
-
-    // EJERCICIO GENERAL (no clasificado)
-    return { name: 'EJERCICIO DINÁMICO EN CURSO', confidence: 0.70 };
+    // EJERCICIO GENERAL / PREPARANDO (no clasificado en los 5 modelos)
+    return { name: '🟢 PREPARANDO EJERCICIO', confidence: 0.85 };
   }
 
   /**
@@ -317,14 +280,12 @@ export class ExerciseDetector {
 
     // Usar ángulo de rodilla para squats/lunges, codo para pushups, cadera para situps
     let trackingValue;
-    if (exercise.includes('SQUAT') || exercise.includes('LUNGE') || exercise.includes('DEADLIFT')) {
+    if (exercise.includes('SQUAT') || exercise.includes('CLEAN')) {
       trackingValue = (metrics.kneeAngleL + metrics.kneeAngleR) / 2;
-    } else if (exercise.includes('PUSHUP')) {
+    } else if (exercise.includes('PUSHUP') || exercise.includes('BENCH PRESS')) {
       trackingValue = (metrics.elbowAngleL + metrics.elbowAngleR) / 2;
     } else if (exercise.includes('SITUP')) {
       trackingValue = (metrics.hipAngleL + metrics.hipAngleR) / 2;
-    } else if (exercise.includes('JUMPING JACK')) {
-      trackingValue = (metrics.shoulderAngleL + metrics.shoulderAngleR) / 2;
     } else {
       trackingValue = metrics.midHipY;
     }
@@ -332,14 +293,12 @@ export class ExerciseDetector {
     // Obtener rango dinámico
     const recent = this.buffer.slice(-30);
     let recentValues;
-    if (exercise.includes('SQUAT') || exercise.includes('LUNGE') || exercise.includes('DEADLIFT')) {
+    if (exercise.includes('SQUAT') || exercise.includes('CLEAN')) {
       recentValues = recent.map(r => (r.kneeAngleL + r.kneeAngleR) / 2);
-    } else if (exercise.includes('PUSHUP')) {
+    } else if (exercise.includes('PUSHUP') || exercise.includes('BENCH PRESS')) {
       recentValues = recent.map(r => (r.elbowAngleL + r.elbowAngleR) / 2);
     } else if (exercise.includes('SITUP')) {
       recentValues = recent.map(r => (r.hipAngleL + r.hipAngleR) / 2);
-    } else if (exercise.includes('JUMPING JACK')) {
-      recentValues = recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2);
     } else {
       recentValues = recent.map(r => r.midHipY);
     }
