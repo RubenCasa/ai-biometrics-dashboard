@@ -106,8 +106,11 @@ export function evaluatePoseAndExercise(landmarks, history = []) {
   const issues = [];
 
   // 1. INCLINACIÓN DEL TRONCO (penalización principal)
+  //    Solo aplica para ejercicios de PIE. En SITUP y PUSHUP el tronco horizontal es CORRECTO.
   //    < 8° = excelente, 8-15° = aceptable, 15-25° = moderado, > 25° = severo
-  if (smoothedTrunk > 8) {
+  const exerciseName = detection.exercise;
+  const isGroundExercise = exerciseName.includes('SITUP') || exerciseName.includes('PUSHUP') || exerciseName.includes('PLANK');
+  if (!isGroundExercise && smoothedTrunk > 8) {
     const trunkPenalty = Math.min(40, (smoothedTrunk - 8) * 2.5);
     qualityScore -= trunkPenalty;
     if (smoothedTrunk > 20) {
@@ -136,7 +139,6 @@ export function evaluatePoseAndExercise(landmarks, history = []) {
 
   // 3. VALGO DE RODILLAS (penalización)
   //    Ratio < 0.75 indica que las rodillas colapsan hacia adentro
-  const exerciseName = detection.exercise;
   if ((exerciseName.includes('SQUAT') || exerciseName.includes('LUNGE') || exerciseName.includes('DEADLIFT'))
       && smoothedValgus < 0.75) {
     const valgusPenalty = Math.min(30, (0.75 - smoothedValgus) * 100);

@@ -241,47 +241,58 @@ export class ExerciseDetector {
     const kneeVariation = Math.max(...recent.map(r => (r.kneeAngleL + r.kneeAngleR) / 2))
                         - Math.min(...recent.map(r => (r.kneeAngleL + r.kneeAngleR) / 2));
 
-    // ─── Reglas de Clasificación (Prioridad por especificidad postural) ───
+    // ─── Reglas de Clasificación ────────────────────────────────────────────
+    // bodyDY ≈ 1.0  → cuerpo VERTICAL (de pie)
+    // bodyDY ≈ 0.0  → cuerpo HORIZONTAL (acostado)
+    // Este valor es el separador principal entre ejercicios en pie vs en el suelo
 
-    // SITUP (Abdominal): Cadera baja/media + tronco acostado/sentado flexionado o cuerpo cerca al suelo
-    if ((avgHip < 145 || m.hipDepthNorm > 0.40) && avgBodyDY < 0.42 && avgTrunk < 65 && avgKnee < 165) {
-      return { name: 'SITUP (Abdominal)', confidence: Math.min(0.96, 0.65 + hipRange * 3) };
+    // ── GRUPO 1: CUERPO HORIZONTAL (acostado / en el suelo) ──────────────
+    // bodyDY < 0.50 significa que hombros y cadera están casi a la misma altura
+
+    // SITUP (Abdominal): cuerpo horizontal + rodillas dobladas
+    // Persona acostada boca arriba haciendo crunches o sit-ups
+    if (avgBodyDY < 0.50 && avgKnee < 165) {
+      const conf = Math.min(0.97, 0.70 + (0.50 - avgBodyDY) * 0.8 + hipRange * 2);
+      return { name: 'SITUP (Abdominal)', confidence: conf };
     }
 
-    // PUSHUP (Flexión): Cuerpo horizontal (bodyDY bajo) + codos flexionándose o tronco extendido horizontalmente
-    if (avgBodyDY < 0.22 && avgElbow < 165 && avgTrunk > 35) {
+    // PUSHUP (Flexión): cuerpo muy horizontal + codos flexionados
+    if (avgBodyDY < 0.38 && avgElbow < 158) {
       return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.94, 0.60 + (180 - avgElbow) / 100) };
     }
 
-    // SQUAT (Sentadilla): Rango vertical de cadera + rodillas flexionadas + tronco erguido o semi-inclinado
-    if ((hipRange > 0.03 || avgKnee < 165) && (kneeVariation > 5 || avgBodyDY > 0.15)) {
-      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + hipRange * 2) };
-    }
-
-    // LUNGE: Asimetría de rodillas (una muy flexionada, otra más extendida)
-    const kneeAsymmetry = Math.abs(m.kneeAngleL - m.kneeAngleR);
-    if (kneeAsymmetry > 20 && (m.kneeAngleL < 130 || m.kneeAngleR < 130)) {
-      return { name: 'LUNGE (Zancada)', confidence: Math.min(0.90, 0.55 + kneeAsymmetry / 80) };
-    }
-
-    // DEADLIFT: Cadera se mueve mucho, tronco se inclina, rodillas casi extendidas
-    if (hipRange > 0.05 && avgTrunk > 15 && avgKnee > 140) {
-      return { name: 'DEADLIFT (Peso Muerto)', confidence: Math.min(0.88, 0.50 + avgTrunk / 50) };
-    }
-
-    // PLANK: Cuerpo horizontal y estático (poco movimiento)
-    if (avgBodyDY < 0.20 && hipRange < 0.03 && avgTrunk > 45) {
+    // PLANK (Plancha): cuerpo horizontal y estático (poco movimiento de cadera)
+    if (avgBodyDY < 0.30 && hipRange < 0.04) {
       return { name: 'PLANK (Plancha)', confidence: 0.85 };
     }
 
-    // JUMPING JACK: Movimiento rápido de brazos (ángulo de hombro cambia mucho)
+    // ── GRUPO 2: CUERPO VERTICAL (de pie) ────────────────────────────────
+    // bodyDY >= 0.50 significa que la persona está erguida o semi-erguida
+
+    // SQUAT (Sentadilla): cuerpo vertical + rodillas flexionadas + descenso de cadera
+    if (avgBodyDY >= 0.50 && (avgKnee < 160 || hipRange > 0.03) && avgTrunk < 50) {
+      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + hipRange * 2) };
+    }
+
+    // LUNGE (Zancada): asimetría de rodillas + cuerpo erguido
+    const kneeAsymmetry = Math.abs(m.kneeAngleL - m.kneeAngleR);
+    if (kneeAsymmetry > 22 && avgBodyDY >= 0.40 && (m.kneeAngleL < 130 || m.kneeAngleR < 130)) {
+      return { name: 'LUNGE (Zancada)', confidence: Math.min(0.90, 0.55 + kneeAsymmetry / 80) };
+    }
+
+    // DEADLIFT (Peso Muerto): cadera se mueve mucho, tronco inclinado, rodillas casi extendidas
+    if (hipRange > 0.05 && avgBodyDY >= 0.45 && avgTrunk > 15 && avgKnee > 140) {
+      return { name: 'DEADLIFT (Peso Muerto)', confidence: Math.min(0.88, 0.50 + avgTrunk / 50) };
+    }
+
+    // JUMPING JACK: movimiento rápido de hombros
     const shoulderVar = Math.max(...recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2))
                       - Math.min(...recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2));
     if (shoulderVar > 25) {
       return { name: 'JUMPING JACK', confidence: Math.min(0.88, 0.55 + shoulderVar / 80) };
     }
 
-    // OVERHEAD PRESS: Brazos se extienden hacia arriba
+    // OVERHEAD PRESS: brazos se extienden hacia arriba
     if (m.shoulderAngleL > 130 && m.shoulderAngleR > 130 && avgElbow > 120) {
       return { name: 'PRESS (Prensa)', confidence: 0.82 };
     }
