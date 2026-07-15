@@ -10,7 +10,6 @@ export default function Sidebar({
   onStartWebcam
 }) {
   const fileInputRef = useRef(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -19,10 +18,7 @@ export default function Sidebar({
     }
   };
 
-  const filteredDemos = EXAMPLE_VIDEOS.filter(demo =>
-    demo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    demo.desc.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDemos = EXAMPLE_VIDEOS;
 
   return (
     <div className="card sidebar-card" style={{
@@ -94,26 +90,6 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Buscador Rápido */}
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="🔍 Buscar ejercicio o demo..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            borderRadius: '9999px',
-            background: '#0a0e11',
-            border: '1px solid var(--border-color)',
-            color: '#ffffff',
-            fontSize: '0.82rem',
-            outline: 'none',
-            fontFamily: 'var(--font-mono)'
-          }}
-        />
-      </div>
 
       {/* LISTA DE VIDEOS DE EJEMPLO */}
       <div className="card-title" style={{ fontSize: '0.88rem', color: 'var(--accent-blue, #00f0ff)', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
