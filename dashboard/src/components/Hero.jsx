@@ -70,7 +70,8 @@ export default function Hero({ onStart }) {
             letterSpacing: '0.05em',
             boxShadow: '0 10px 30px rgba(161, 255, 79, 0.3)',
             transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            fontFamily: 'var(--font-display, sans-serif)'
+            fontFamily: 'var(--font-display, sans-serif)',
+            marginBottom: '40px'
           }}
           onMouseEnter={e => {
             e.currentTarget.style.transform = 'translateY(-5px) scale(1.05)';
@@ -83,12 +84,62 @@ export default function Hero({ onStart }) {
         >
           INICIAR DASHBOARD ↓
         </button>
+
+        {/* Textos y Branding integrados al Hero */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px',
+          width: '100%',
+          maxWidth: '900px'
+        }}>
+          {/* Badges / Pills */}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.75rem', color: '#00f0ff', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(0, 240, 255, 0.08)', padding: '8px 16px', borderRadius: '9999px', border: '1px solid rgba(0, 240, 255, 0.2)' }}>
+              📊 BIOMETRÍA IA · ANÁLISIS DE POSTURA
+            </span>
+            <span style={{ fontSize: '0.75rem', color: '#a1ff4f', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(161, 255, 79, 0.08)', padding: '8px 16px', borderRadius: '9999px', border: '1px solid rgba(161, 255, 79, 0.2)' }}>
+              🎓 ESTUDIANTES DE CIENCIAS DE DATOS E INTELIGENCIA ARTIFICIAL
+            </span>
+            <span style={{ fontSize: '0.75rem', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(255, 255, 255, 0.08)', padding: '8px 16px', borderRadius: '9999px', border: '1px solid rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981', display: 'inline-block', animation: 'pulse 1.5s infinite ease-in-out' }} />
+              🇪🇨 CAMBIANDO AL ECUADOR ➔ MIRA
+            </span>
+            <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(245, 158, 11, 0.08)', padding: '8px 16px', borderRadius: '9999px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+              ⚡ INFERENCIA NEURAL 2D/3D EN VIVO
+            </span>
+          </div>
+
+          {/* Tarjeta de la Cita */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            padding: '24px 32px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            boxShadow: '0 15px 35px rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(10px)',
+            marginTop: '10px'
+          }}>
+            <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '8px' }}>💡</span>
+            <p style={{ fontSize: '1.05rem', color: '#e2e8f0', fontStyle: 'italic', margin: '0 0 12px 0', lineHeight: 1.6, fontWeight: 300 }}>
+              "Tu espalda baja y rodillas son tus activos más valiosos. Mantén el ángulo a 90° y deja que la IA guíe tu técnica."
+            </p>
+            <span style={{ fontSize: '0.8rem', color: 'var(--accent-green, #a1ff4f)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              — COACH IA MEDIAPIPE
+            </span>
+          </div>
+        </div>
       </div>
 
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.4); opacity: 0.6; }
         }
       `}</style>
     </div>

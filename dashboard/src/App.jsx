@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import Header from './components/Header';
-import ModeSelectorDock from './components/ModeSelectorDock';
+
 import Sidebar from './components/Sidebar';
 import KpiStrip from './components/KpiStrip';
 import SkeletonCanvas from './components/SkeletonCanvas';
@@ -137,17 +136,7 @@ export default function App() {
       {/* Un ancla invisible para hacer scroll */}
       <div id="dashboard-start" />
 
-      {/* 1. Header Telemetría INK Games */}
-      <Header
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        activeMenu={activeMenu}
-      />
 
-      {/* 2. Dock Central de Mando e Integración API Motivacional */}
-      <ModeSelectorDock
-        activeMenu={activeMenu}
-        onSelectMenu={setActiveMenu}
-      />
       {activeMenu === 'live' && (
         <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
           <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
