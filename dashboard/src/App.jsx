@@ -12,6 +12,7 @@ import DatasetView from './components/DatasetView';
 import GuideView from './components/GuideView';
 import { INITIAL_SEQUENCES, EXAMPLE_VIDEOS } from './data/sequences';
 import { resetDetector } from './utils/poseClassifier';
+import Hero from './components/Hero';
 
 export default function App() {
   const [sequences, setSequences] = useState(INITIAL_SEQUENCES);
@@ -22,8 +23,8 @@ export default function App() {
   const [isWebcam, setIsWebcam] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  // Estado para la barra de mando entre los 4 modos del centro deportivo INK
-  const [activeMenu, setActiveMenu] = useState('live');
+  // Estado para la barra de mando entre los modos
+  const [activeMenu, setActiveMenu] = useState('hero');
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
 
@@ -126,19 +127,27 @@ export default function App() {
 
   return (
     <div className="app-root">
-      {/* 1. Header Telemetría INK Games (SIN barra de navegación arriba) */}
-      <Header
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        activeMenu={activeMenu}
-      />
+      {/* Renderizar Header y Dock solo si no estamos en el Hero */}
+      {activeMenu !== 'hero' && (
+        <>
+          {/* 1. Header Telemetría INK Games (SIN barra de navegación arriba) */}
+          <Header
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            activeMenu={activeMenu}
+          />
 
-      {/* 2. Dock Central de Mando e Integración API Motivacional */}
-      <ModeSelectorDock
-        activeMenu={activeMenu}
-        onSelectMenu={setActiveMenu}
-      />
+          {/* 2. Dock Central de Mando e Integración API Motivacional */}
+          <ModeSelectorDock
+            activeMenu={activeMenu}
+            onSelectMenu={setActiveMenu}
+          />
+        </>
+      )}
 
       {/* RENDERIZADO CONDICIONAL DE LOS DIFERENTES MODOS */}
+      {activeMenu === 'hero' && (
+        <Hero onStart={() => setActiveMenu('live')} />
+      )}
       {activeMenu === 'live' && (
         <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
           <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>

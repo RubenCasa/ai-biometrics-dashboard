@@ -19,39 +19,7 @@ export default function Header({ onToggleSidebar, activeMenu }) {
     }}>
       {/* Sección Izquierda: Botón Menú Lateral + Identidad del Proyecto */}
       <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {activeMenu === 'live' && (
-          <button
-            className="hamburger-btn"
-            onClick={onToggleSidebar}
-            aria-label="Abrir panel de control lateral"
-            style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#00f0ff',
-              borderRadius: '12px',
-              padding: '9px 15px',
-              fontSize: '1.2rem',
-              cursor: 'pointer',
-              fontWeight: 800,
-              transition: 'all 0.25s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(0, 240, 255, 0.15)';
-              e.currentTarget.style.borderColor = '#00f0ff';
-              e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 240, 255, 0.3)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            ☰
-          </button>
-        )}
+
 
         <div className="brand-icon" style={{
           width: '46px',
