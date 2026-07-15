@@ -17,33 +17,36 @@ export default function FeedbackCard({ seq }) {
 
   const phaseLabel = seq.phase === 'up' ? '⬆ SUBIDA' : seq.phase === 'down' ? '⬇ BAJADA' : '— ESTABLE';
 
-  // Síntesis Neural + Inteligencia IA Ultra-Rápida y Futurista (Sin demoras, voz agil de IA)
+  // Síntesis Neural + Coach IA Motivador (Sin corchetes de lectura, habla natural y enérgica como un entrenador real)
   const speakFeedback = async () => {
     if (isSpeaking) return;
     setIsSpeaking(true);
-    setStatusText('⚡ INFERENCIA NEURAL EN CURSO...');
+    setStatusText('⚡ COACH IA HABLANDO...');
 
     try {
-      // 1. Diagnóstico Biomecánico Futurista Instantáneo (0 milisegundos de latencia)
+      // 1. Diagnóstico de Entrenador IA Olímpico (Sin corchetes ni estilo de lectura, habla natural y motivador)
       let aiCoachAdvice = '';
       if (seq.clase === 0) {
-        aiCoachAdvice = `[Sistema IA INK Games]: Análisis biométrico óptimo en ${seq.action || 'ejercicio'}. Precisión del ${confPercentage} por ciento. Ángulos articulares alineados. Mantén el ritmo y la profundidad.`;
+        aiCoachAdvice = `¡Eso es, excelente técnica en ${seq.action || 'tu ejercicio'}! Mantén el pecho arriba y la espalda firme, vas con noventa y cuatro por ciento de calidad, ¡sigue así con ese ritmo!`;
       } else if (seq.clase === 1) {
-        aiCoachAdvice = `[Alerta Neural Biomecánica]: Atención en ${seq.action || 'tu postura'}. Detectada inclinación de espalda o pérdida de eje. Activa el core e incorpora el tronco de inmediato para máxima seguridad.`;
+        aiCoachAdvice = `¡Oye, cuidado con la espalda en ${seq.action || 'el movimiento'}! Estás inclinando el tronco hacia adelante. Aprieta fuerte el core y saca pecho ahora mismo, ¡vamos!`;
       } else {
-        aiCoachAdvice = `[Precaución Biomecánica]: Alerta en articulaciones durante ${seq.action || 'la ejecución'}. Evita el valgo de rodilla y estabiliza el recorrido ahora mismo.`;
+        aiCoachAdvice = `¡Ojo con la alineación de tus articulaciones en ${seq.action || 'tu postura'}! No dejes que las rodillas o codos pierdan estabilidad, controla el recorrido ahora.`;
       }
 
-      // Si hay un mensaje específico personalizado del motor de detección en vivo, lo incluimos al inicio
+      // Si hay un mensaje biomecánico específico del clasificador en vivo, lo adaptamos a voz de coach natural
       if (seq.feedback && !seq.feedback.includes('Analizando') && !seq.feedback.includes('Esperando')) {
-        aiCoachAdvice = `[Diagnóstico IA en Vivo]: ${seq.feedback} Precisión ${confPercentage} por ciento.`;
+        const fraseLimpia = seq.feedback.replace(/✅|⚠️|ALERTA en Fotograma #\d+:?/gi, '').replace(/\([^)]*\)/g, '').trim();
+        if (fraseLimpia.length > 5) {
+          aiCoachAdvice = `¡Atención atleta! ${fraseLimpia} ¡Aprieta el core y ajusta la técnica de inmediato!`;
+        }
       }
 
-      // Intentamos enriquecer con LLM rápido de Pollinations SI responde en menos de 650ms (ultra fast)
+      // Intentamos enriquecer con LLM de Pollinations SI responde en menos de 650ms
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 650);
-        const promptText = `Eres una IA futurista de biomecánica estilo INK Games. El atleta hace ${seq.action || 'ejercicio'}. Score: ${confPercentage}%. Alerta actual: "${seq.feedback}". Dame en UNA sola oración futurista, rápida y precisa en español qué corregir. Empezando con "[Comando IA]:"`;
+        const promptText = `Eres un entrenador personal olímpico de alta energía en el gimnasio estilo INK Games. El atleta hace ${seq.action || 'ejercicio'}. Score: ${confPercentage}%. Alerta actual: "${seq.feedback}". Dame UNA sola oración corta en español hablada directamente al atleta como un coach entusiasta y exigente, con signos de exclamación ¡...! SIN corchetes ni introducciones robóticas.`;
 
         const aiResponse = await fetch('https://text.pollinations.ai/', {
           method: 'POST',
@@ -58,24 +61,26 @@ export default function FeedbackCard({ seq }) {
 
         if (aiResponse.ok) {
           const textData = await aiResponse.text();
-          if (textData && textData.trim().length > 10 && textData.trim().length < 220) {
-            aiCoachAdvice = textData.trim();
+          // Limpiamos cualquier corchete si la IA llegó a añadirlo por error
+          const cleanAI = textData.replace(/\[.*?\]:?/g, '').trim();
+          if (cleanAI && cleanAI.length > 10 && cleanAI.length < 220) {
+            aiCoachAdvice = cleanAI;
           }
         }
       } catch (fastTimeoutErr) {
-        // Si tarda más de 650ms, usamos el diagnóstico instantáneo futurista para cero esperas
+        // Si tarda más de 650ms, usamos el coach motivador instantáneo
       }
 
-      // 2. Síntesis Neural Rápida con Amazon Polly (StreamElements API - Voz Neural "Mia" / "Lucia" a 1.22x de velocidad)
+      // 2. Síntesis Neural con Amazon Polly (StreamElements API - Voz Neural de Coach "Enrique" o "Lupe" a ritmo natural 1.14x)
       let audioPlayed = false;
       try {
         const encodedText = encodeURIComponent(aiCoachAdvice);
-        // "Mia" es una voz neural en español moderna, ultraclara y con tono tecnológico
-        const streamElementsUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Mia&text=${encodedText}`;
+        // "Enrique" es la voz masculina neural más autoritaria y expresiva en español para un coach deportivo
+        const streamElementsUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Enrique&text=${encodedText}`;
         const audio = new Audio(streamElementsUrl);
         
-        // Aceleramos la reproducción a 1.22x para que hable ágil, rápido y con estilo de computadora futurista IA
-        audio.playbackRate = 1.22;
+        // Ritmo ágil pero natural y conversacional como una persona hablando con energía (1.14x)
+        audio.playbackRate = 1.14;
         
         await new Promise((resolve, reject) => {
           const timeout = setTimeout(() => reject(new Error('Audio timeout')), 4500);
@@ -84,16 +89,16 @@ export default function FeedbackCard({ seq }) {
           audio.play().catch(reject);
         });
       } catch (ttsError) {
-        // Fallback si la voz en la nube tarda
+        // Fallback al motor del navegador si la nube no responde
       }
 
-      // 3. Fallback Instantáneo al motor Neural/Natural de alta velocidad del navegador (1.25x speed)
+      // 3. Fallback Instantáneo a Voz Natural Neural en el navegador con intonation conversacional
       if (!audioPlayed && typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(aiCoachAdvice);
         utterance.lang = 'es-ES';
-        utterance.rate = 1.25; // Habla rápido, dinámico y con estilo IA tecnológica
-        utterance.pitch = 1.05;
+        utterance.rate = 1.15; // Habla con energía, fluidez y entonación humana
+        utterance.pitch = 1.0;
 
         const voices = window.speechSynthesis.getVoices();
         const bestVoice = voices.find(v => 
@@ -110,7 +115,7 @@ export default function FeedbackCard({ seq }) {
         });
       }
     } catch (e) {
-      console.error('Error con voz IA rápida:', e);
+      console.error('Error con voz de coach natural:', e);
     } finally {
       setIsSpeaking(false);
       setStatusText('🔊 ESCUCHAR CORRECCIÓN POR VOZ (IA)');
