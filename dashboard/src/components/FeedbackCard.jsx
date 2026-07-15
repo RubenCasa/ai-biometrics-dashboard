@@ -17,22 +17,33 @@ export default function FeedbackCard({ seq }) {
 
   const phaseLabel = seq.phase === 'up' ? '⬆ SUBIDA' : seq.phase === 'down' ? '⬇ BAJADA' : '— ESTABLE';
 
-  // Síntesis Neural + Inteligencia IA 100% GRATUITA (Sin API Keys ni costos)
+  // Síntesis Neural + Inteligencia IA Ultra-Rápida y Futurista (Sin demoras, voz agil de IA)
   const speakFeedback = async () => {
     if (isSpeaking) return;
     setIsSpeaking(true);
-    setStatusText('⚡ GENERANDO CONSEJO Y VOZ NEURAL...');
+    setStatusText('⚡ INFERENCIA NEURAL EN CURSO...');
 
     try {
-      // 1. Generar consejo inteligente en vivo con IA Libre (Pollinations.ai / Qwen o Prompt Biomecánico Inteligente)
-      let aiCoachAdvice = seq.feedback || 'Analizando postura biomecánica en vivo.';
-      
+      // 1. Diagnóstico Biomecánico Futurista Instantáneo (0 milisegundos de latencia)
+      let aiCoachAdvice = '';
+      if (seq.clase === 0) {
+        aiCoachAdvice = `[Sistema IA INK Games]: Análisis biométrico óptimo en ${seq.action || 'ejercicio'}. Precisión del ${confPercentage} por ciento. Ángulos articulares alineados. Mantén el ritmo y la profundidad.`;
+      } else if (seq.clase === 1) {
+        aiCoachAdvice = `[Alerta Neural Biomecánica]: Atención en ${seq.action || 'tu postura'}. Detectada inclinación de espalda o pérdida de eje. Activa el core e incorpora el tronco de inmediato para máxima seguridad.`;
+      } else {
+        aiCoachAdvice = `[Precaución Biomecánica]: Alerta en articulaciones durante ${seq.action || 'la ejecución'}. Evita el valgo de rodilla y estabiliza el recorrido ahora mismo.`;
+      }
+
+      // Si hay un mensaje específico personalizado del motor de detección en vivo, lo incluimos al inicio
+      if (seq.feedback && !seq.feedback.includes('Analizando') && !seq.feedback.includes('Esperando')) {
+        aiCoachAdvice = `[Diagnóstico IA en Vivo]: ${seq.feedback} Precisión ${confPercentage} por ciento.`;
+      }
+
+      // Intentamos enriquecer con LLM rápido de Pollinations SI responde en menos de 650ms (ultra fast)
       try {
-        const promptText = `Eres el entrenador olímpico IA de INK Games. El usuario realiza el ejercicio ${seq.action || 'ejercicio biomecánico'}. Su puntuación actual es ${confPercentage}% (Clase ${seq.clase === 0 ? 'Óptima' : 'Alerta'}). Alerta técnica actual: "${seq.feedback}". Dame en UNA sola oración corta, motivadora y precisa en español lo que debe hacer o corregir ahora mismo.`;
-        
-        // Timeout corto para que sea instantáneo y nunca se quede colgado si la red es lenta
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const timeoutId = setTimeout(() => controller.abort(), 650);
+        const promptText = `Eres una IA futurista de biomecánica estilo INK Games. El atleta hace ${seq.action || 'ejercicio'}. Score: ${confPercentage}%. Alerta actual: "${seq.feedback}". Dame en UNA sola oración futurista, rápida y precisa en español qué corregir. Empezando con "[Comando IA]:"`;
 
         const aiResponse = await fetch('https://text.pollinations.ai/', {
           method: 'POST',
@@ -47,58 +58,59 @@ export default function FeedbackCard({ seq }) {
 
         if (aiResponse.ok) {
           const textData = await aiResponse.text();
-          if (textData && textData.trim().length > 5 && textData.trim().length < 250) {
+          if (textData && textData.trim().length > 10 && textData.trim().length < 220) {
             aiCoachAdvice = textData.trim();
           }
         }
-      } catch (err) {
-        // Si falla o tarda más de 3.5s por conexión, usa el diagnóstico inteligente procesado localmente
-        if (seq.clase === 0) {
-          aiCoachAdvice = `¡Excelente técnica en ${seq.action || 'este ejercicio'}! Mantén la estabilidad y el ritmo, vas con una calidad del ${confPercentage} por ciento.`;
-        } else if (seq.clase === 1) {
-          aiCoachAdvice = `¡Atención! Detecto una alerta en tu postura. Endereza la espalda y activa el core inmediatamente.`;
-        } else {
-          aiCoachAdvice = `Cuidado con la alineación de tus extremidades en ${seq.action || 'el movimiento'}. Concéntrate en la profundidad y el control.`;
-        }
+      } catch (fastTimeoutErr) {
+        // Si tarda más de 650ms, usamos el diagnóstico instantáneo futurista para cero esperas
       }
 
-      // 2. Síntesis Neural Gratis con Amazon Polly Neural (StreamElements API - Voz "Lupe" / "Mia")
+      // 2. Síntesis Neural Rápida con Amazon Polly (StreamElements API - Voz Neural "Mia" / "Lucia" a 1.22x de velocidad)
+      let audioPlayed = false;
       try {
         const encodedText = encodeURIComponent(aiCoachAdvice);
-        const streamElementsUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Lupe&text=${encodedText}`;
+        // "Mia" es una voz neural en español moderna, ultraclara y con tono tecnológico
+        const streamElementsUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Mia&text=${encodedText}`;
         const audio = new Audio(streamElementsUrl);
         
+        // Aceleramos la reproducción a 1.22x para que hable ágil, rápido y con estilo de computadora futurista IA
+        audio.playbackRate = 1.22;
+        
         await new Promise((resolve, reject) => {
-          audio.onended = resolve;
-          audio.onerror = reject;
+          const timeout = setTimeout(() => reject(new Error('Audio timeout')), 4500);
+          audio.onended = () => { clearTimeout(timeout); audioPlayed = true; resolve(); };
+          audio.onerror = (e) => { clearTimeout(timeout); reject(e); };
           audio.play().catch(reject);
         });
       } catch (ttsError) {
-        // 3. Fallback a voz Neural Natural del navegador si el audio stream falla
-        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(aiCoachAdvice);
-          utterance.lang = 'es-ES';
-          utterance.rate = 1.05;
+        // Fallback si la voz en la nube tarda
+      }
 
-          // Seleccionar voz natural/neural si está instalada en el sistema
-          const voices = window.speechSynthesis.getVoices();
-          const bestVoice = voices.find(v => 
-            (v.lang.includes('es') || v.lang.includes('ES')) &&
-            (v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Neural') || v.name.includes('Google') || v.name.includes('Alvaro') || v.name.includes('Dalia'))
-          ) || voices.find(v => v.lang.includes('es'));
+      // 3. Fallback Instantáneo al motor Neural/Natural de alta velocidad del navegador (1.25x speed)
+      if (!audioPlayed && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(aiCoachAdvice);
+        utterance.lang = 'es-ES';
+        utterance.rate = 1.25; // Habla rápido, dinámico y con estilo IA tecnológica
+        utterance.pitch = 1.05;
 
-          if (bestVoice) utterance.voice = bestVoice;
+        const voices = window.speechSynthesis.getVoices();
+        const bestVoice = voices.find(v => 
+          (v.lang.includes('es') || v.lang.includes('ES')) &&
+          (v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Neural') || v.name.includes('Google') || v.name.includes('Alvaro') || v.name.includes('Dalia'))
+        ) || voices.find(v => v.lang.includes('es'));
 
-          await new Promise(resolve => {
-            utterance.onend = resolve;
-            utterance.onerror = resolve;
-            window.speechSynthesis.speak(utterance);
-          });
-        }
+        if (bestVoice) utterance.voice = bestVoice;
+
+        await new Promise(resolve => {
+          utterance.onend = resolve;
+          utterance.onerror = resolve;
+          window.speechSynthesis.speak(utterance);
+        });
       }
     } catch (e) {
-      console.error('Error general de voz IA:', e);
+      console.error('Error con voz IA rápida:', e);
     } finally {
       setIsSpeaking(false);
       setStatusText('🔊 ESCUCHAR CORRECCIÓN POR VOZ (IA)');
