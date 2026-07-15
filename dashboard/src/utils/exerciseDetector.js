@@ -323,6 +323,8 @@ export class ExerciseDetector {
       trackingValue = (metrics.elbowAngleL + metrics.elbowAngleR) / 2;
     } else if (exercise.includes('SITUP')) {
       trackingValue = (metrics.hipAngleL + metrics.hipAngleR) / 2;
+    } else if (exercise.includes('JUMPING JACK')) {
+      trackingValue = (metrics.shoulderAngleL + metrics.shoulderAngleR) / 2;
     } else {
       trackingValue = metrics.midHipY;
     }
@@ -336,6 +338,8 @@ export class ExerciseDetector {
       recentValues = recent.map(r => (r.elbowAngleL + r.elbowAngleR) / 2);
     } else if (exercise.includes('SITUP')) {
       recentValues = recent.map(r => (r.hipAngleL + r.hipAngleR) / 2);
+    } else if (exercise.includes('JUMPING JACK')) {
+      recentValues = recent.map(r => (r.shoulderAngleL + r.shoulderAngleR) / 2);
     } else {
       recentValues = recent.map(r => r.midHipY);
     }

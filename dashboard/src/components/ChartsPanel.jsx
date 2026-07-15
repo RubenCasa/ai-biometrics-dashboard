@@ -166,38 +166,55 @@ export default function ChartsPanel({ seq }) {
   }, [history, hasRealData, seq.clase, labels, N]);
 
   // ─── Datos de la gráfica 2: Ángulos articulares ─────────────────────────
-  const { kneeLSeries, kneeRSeries } = useMemo(() => {
+  const { jointLSeries, jointRSeries, activeJointName } = useMemo(() => {
+    let jointName = 'Rodilla';
+    let keyL = 'kneeL';
+    let keyR = 'kneeR';
+    let fallbackAngle = 135;
+    
+    const ex = seq.exercise || seq.action || '';
+    const exUpper = ex.toUpperCase();
+    if (exUpper.includes('PUSHUP') || exUpper.includes('PLANCHA') || exUpper.includes('PLANK')) {
+      jointName = 'Codo'; keyL = 'elbowL'; keyR = 'elbowR'; fallbackAngle = 160;
+    } else if (exUpper.includes('SITUP') || exUpper.includes('ABDOMINAL')) {
+      jointName = 'Cadera'; keyL = 'hipL'; keyR = 'hipR'; fallbackAngle = 120;
+    } else if (exUpper.includes('JUMPING JACK')) {
+      jointName = 'Hombro'; keyL = 'shoulderL'; keyR = 'shoulderR'; fallbackAngle = 20;
+    }
+
     if (hasRealData) {
       return {
-        kneeLSeries: history.map(h => Number((h.kneeL ?? h.kneeAngleL ?? 135).toFixed(1))),
-        kneeRSeries: history.map(h => Number((h.kneeR ?? h.kneeAngleR ?? 135).toFixed(1))),
+        activeJointName: jointName,
+        jointLSeries: history.map(h => Number((h[keyL] ?? h.kneeL ?? fallbackAngle).toFixed(1))),
+        jointRSeries: history.map(h => Number((h[keyR] ?? h.kneeR ?? fallbackAngle).toFixed(1))),
       };
     }
     return {
-      kneeLSeries: labels.map((_, i) => {
+      activeJointName: jointName,
+      jointLSeries: labels.map((_, i) => {
         const t = (i / N) * Math.PI * 2;
-        return Number((135 + Math.cos(t) * 45).toFixed(1));
+        return Number((fallbackAngle + Math.cos(t) * (fallbackAngle > 90 ? -45 : 45)).toFixed(1));
       }),
-      kneeRSeries: labels.map((_, i) => {
+      jointRSeries: labels.map((_, i) => {
         const t = (i / N) * Math.PI * 2 + 0.15;
-        return Number((132 + Math.cos(t) * 43).toFixed(1));
+        return Number((fallbackAngle - 3 + Math.cos(t) * (fallbackAngle > 90 ? -43 : 43)).toFixed(1));
       }),
     };
-  }, [history, hasRealData, labels, N]);
+  }, [history, hasRealData, seq.exercise, seq.action, labels, N]);
 
   // ─── Estadísticas calculadas ─────────────────────────────────────────────
   const stats = useMemo(() => {
-    const allKnee = [...kneeLSeries, ...kneeRSeries];
-    const minKnee = Math.min(...allKnee);
-    const maxKnee = Math.max(...allKnee);
-    const avgKnee = allKnee.reduce((a, b) => a + b, 0) / (allKnee.length || 1);
+    const allJoints = [...jointLSeries, ...jointRSeries];
+    const minJoint = Math.min(...allJoints);
+    const maxJoint = Math.max(...allJoints);
+    const avgJoint = allJoints.reduce((a, b) => a + b, 0) / (allJoints.length || 1);
 
     const avgTrunk = trunkSeries.reduce((a, b) => a + b, 0) / (trunkSeries.length || 1);
     const maxTrunk = Math.max(...trunkSeries);
 
     // Índice de estabilidad: 1 - (desviación estándar normalizada)
-    const mean = avgKnee;
-    const variance = allKnee.reduce((s, v) => s + (v - mean) ** 2, 0) / (allKnee.length || 1);
+    const mean = avgJoint;
+    const variance = allJoints.reduce((s, v) => s + (v - mean) ** 2, 0) / (allJoints.length || 1);
     const stdDev = Math.sqrt(variance);
     const stability = Math.max(0, Math.min(1, 1 - stdDev / 90));
 
@@ -206,9 +223,10 @@ export default function ChartsPanel({ seq }) {
     const exerciseName = seq.exercise || seq.action || seq.nombre || 'Ejercicio';
 
     return {
-      minKnee: Number(minKnee.toFixed(1)),
-      maxKnee: Number(maxKnee.toFixed(1)),
-      avgKnee: Number(avgKnee.toFixed(1)),
+      activeJointName,
+      minJoint: Number(minJoint.toFixed(1)),
+      maxJoint: Number(maxJoint.toFixed(1)),
+      avgJoint: Number(avgJoint.toFixed(1)),
       avgTrunk: Number(avgTrunk.toFixed(1)),
       maxTrunk: Number(maxTrunk.toFixed(1)),
       stability: Number(stability.toFixed(2)),
@@ -216,9 +234,9 @@ export default function ChartsPanel({ seq }) {
       repCount,
       exerciseName,
       frames: history.length,
-      rangeOfMotion: Number((maxKnee - minKnee).toFixed(1)),
+      rangeOfMotion: Number((maxJoint - minJoint).toFixed(1)),
     };
-  }, [kneeLSeries, kneeRSeries, trunkSeries, seq, history.length]);
+  }, [jointLSeries, jointRSeries, trunkSeries, seq, history.length, activeJointName]);
 
   // ─── Datasets ────────────────────────────────────────────────────────────
   const kinematicsDataset = {
@@ -249,11 +267,11 @@ export default function ChartsPanel({ seq }) {
   };
 
   const anglesDataset = {
-    labels: labels.slice(0, kneeLSeries.length),
+    labels: labels.slice(0, jointLSeries.length),
     datasets: [
       {
-        label: 'Rodilla Izq. (°)',
-        data: kneeLSeries,
+        label: `${activeJointName} Izq. (°)`,
+        data: jointLSeries,
         borderColor: C.purple,
         backgroundColor: `${C.purple}15`,
         borderWidth: 2.5,
@@ -262,8 +280,8 @@ export default function ChartsPanel({ seq }) {
         tension: 0.4,
       },
       {
-        label: 'Rodilla Der. (°)',
-        data: kneeRSeries,
+        label: `${activeJointName} Der. (°)`,
+        data: jointRSeries,
         borderColor: C.pink,
         backgroundColor: `${C.pink}10`,
         borderWidth: 2,
@@ -304,10 +322,10 @@ export default function ChartsPanel({ seq }) {
     rows.push(['Calidad_AI_Score_%', stats.qualityScore]);
     rows.push(['Repeticiones', stats.repCount]);
     rows.push(['Frames_Analizados', stats.frames]);
-    rows.push(['Angulo_Minimo_deg', stats.minKnee]);
-    rows.push(['Angulo_Maximo_deg', stats.maxKnee]);
-    rows.push(['Angulo_Promedio_deg', stats.avgKnee]);
-    rows.push(['Rango_de_Movimiento_deg', stats.rangeOfMotion]);
+    rows.push(['Angulo_Minimo_deg', stats.minJoint]);
+    rows.push(['Angulo_Maximo_deg', stats.maxJoint]);
+    rows.push([`Angulo_${stats.activeJointName}_Promedio_deg`, stats.avgJoint]);
+    rows.push([`Rango_Movimiento_${stats.activeJointName}_deg`, stats.rangeOfMotion]);
     rows.push(['Inclinacion_Tronco_Promedio_deg', stats.avgTrunk]);
     rows.push(['Indice_Estabilidad', stats.stability]);
 
@@ -501,11 +519,10 @@ export default function ChartsPanel({ seq }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', marginBottom: '5px' }}>
-                🦵 Curva de Flexión Articular — Rodilla Izquierda & Derecha
+                🦵 Curva de Flexión Articular — {stats.activeJointName} Izquierda & Derecha
               </div>
               <div style={{ fontSize: '0.78rem', color: '#64748b', maxWidth: '480px' }}>
-                MediaPipe Pose calcula el ángulo geométrico entre 3 vectores: cadera → rodilla → tobillo.
-                En movimientos óptimos el rango varía entre 90° (flexión máxima) y 170° (extensión).
+                MediaPipe Pose calcula el ángulo geométrico de esta articulación para medir el rango de movimiento durante el ejercicio.
               </div>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>

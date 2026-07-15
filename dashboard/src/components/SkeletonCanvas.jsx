@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { PENN_CONNECTIONS, MP_TO_PENN } from '../utils/constants';
 import { evaluatePoseAndExercise, resetDetector } from '../utils/poseClassifier';
+import { extractMetrics } from '../utils/exerciseDetector';
 
 // Caché de imágenes para fotogramas reales cargados en memoria
 const imageCache = {};
@@ -82,12 +83,20 @@ export default function SkeletonCanvas({
             const shYVal = (results.poseLandmarks[11].y + results.poseLandmarks[12].y) / 2;
             const trunkTiltVal = Math.abs(results.poseLandmarks[11].x - results.poseLandmarks[23].x) * 90;
             
+            const metrics = extractMetrics(results.poseLandmarks);
             historyRef.current.push({
               hipY: hipYVal * 420,
               shY: shYVal * 420,
-              bodyDY: Math.abs(shYVal - hipYVal) * 420,
-              kneeL: 135 + Math.sin(historyRef.current.length * 0.3) * 35,
-              trunkAngle: trunkTiltVal
+              bodyDY: metrics.bodyDY,
+              kneeL: metrics.kneeAngleL,
+              kneeR: metrics.kneeAngleR,
+              hipL: metrics.hipAngleL,
+              hipR: metrics.hipAngleR,
+              elbowL: metrics.elbowAngleL,
+              elbowR: metrics.elbowAngleR,
+              shoulderL: metrics.shoulderAngleL,
+              shoulderR: metrics.shoulderAngleR,
+              trunkAngle: metrics.trunkAngle
             });
             if (historyRef.current.length > 60) historyRef.current.shift();
 
