@@ -28,11 +28,13 @@ export default function SkeletonCanvas({
   const videoRef = useRef(null);
   const webcamRef = useRef(null);
   const mpPoseRef = useRef(null);
+  const mpCanvasRef = useRef(null);  // Canvas limpio solo para MediaPipe (sin overlays)
   const [mpReady, setMpReady] = useState(false);
   const mpLandmarksRef = useRef(null);
   const historyRef = useRef([]);
   const animFrameRef = useRef(null);
   const lastReportedFrameRef = useRef(-1);
+  const processingFrameRef = useRef(false); // fuera del loop para persistencia real
   const [webcamActive, setWebcamActive] = useState(false);
   const [webcamError, setWebcamError] = useState(null);
   const streamRef = useRef(null);
@@ -212,7 +214,13 @@ export default function SkeletonCanvas({
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    let processingFrame = false;
+    // Canvas limpio para MediaPipe (sin overlays ni efectos visuales)
+    if (!mpCanvasRef.current) {
+      mpCanvasRef.current = document.createElement('canvas');
+      mpCanvasRef.current.width = 640;
+      mpCanvasRef.current.height = 420;
+    }
+    const mpCtx = mpCanvasRef.current.getContext('2d');
 
     const drawLoop = async () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -401,16 +409,20 @@ export default function SkeletonCanvas({
         if (isVideoReady) {
           ctx.drawImage(videoSource, 0, 0, canvas.width, canvas.height);
 
-          if (mpReady && mpPoseRef.current && !processingFrame && !videoSource.paused) {
-            processingFrame = true;
-            try {
-              await mpPoseRef.current.send({ image: videoSource });
-            } catch (e) {
-              console.warn('[MediaPipe Send Warning]:', e.message || e);
-            } finally {
-              processingFrame = false;
-            }
+          if (mpReady && mpPoseRef.current && !processingFrameRef.current) {
+            processingFrameRef.current = true;
+            // Dibujamos el video en el canvas limpio (sin overlays) para MediaPipe
+            mpCtx.drawImage(videoSource, 0, 0, mpCanvasRef.current.width, mpCanvasRef.current.height);
+            mpPoseRef.current.send({ image: mpCanvasRef.current })
+              .then(() => {
+                processingFrameRef.current = false;
+              })
+              .catch((e) => {
+                console.warn('[MediaPipe Send Warning]:', e.message || e);
+                processingFrameRef.current = false;
+              });
           }
+
         } else {
           ctx.fillStyle = '#080b11';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
