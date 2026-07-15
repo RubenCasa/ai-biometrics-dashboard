@@ -220,9 +220,6 @@ export class ExerciseDetector {
     };
   }
 
-  /**
-   * Detecta qué ejercicio se está realizando basado en métricas biomecánicas.
-   */
   _detectExercise(m) {
     const recent = this.buffer.slice(-20);
 
@@ -238,32 +235,31 @@ export class ExerciseDetector {
     const hipVar = getVar(r => (r.hipAngleL + r.hipAngleR) / 2);
     const elbowVar = getVar(r => (r.elbowAngleL + r.elbowAngleR) / 2);
 
-    // ── Clasificación basada SOLO en los 5 modelos entrenados (Invariante a rotación) ──
+    // Histéresis: el ejercicio detectado previamente ayuda a mantener la clasificación durante las pausas
+    const currentSmoothed = this.exerciseHistory.length > 0 ? this._majorityVote(this.exerciseHistory) : '';
 
-    // 1. PUSHUP (Flexión): Codos se flexionan, rodillas y cadera están relativamente rectas (>140)
-    if (avgKnee > 140 && avgHip > 140 && (elbowVar > 10 || avgElbow < 165)) {
-      return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.95, 0.60 + elbowVar / 50) };
-    }
+    // ── Clasificación robusta a rotación de cámara (basada puramente en la biomecánica) ──
 
-    // 2. BENCH PRESS (Press de Banca): Rodillas flexionadas estáticas (pies al piso), cadera recta estática, codos flexionan
-    if (avgKnee < 150 && kneeVar < 15 && avgHip > 140 && hipVar < 15 && (elbowVar > 10 || avgElbow < 165)) {
-      return { name: 'BENCH PRESS (Press de Banca)', confidence: Math.min(0.92, 0.60 + elbowVar / 50) };
-    }
+    // 1. SITUP (Abdominal): Cadera se flexiona con rodillas estáticas y flexionadas (<150)
+    const isSitup = (hipVar > 15 || (currentSmoothed === 'SITUP (Abdominal)' && avgHip < 150)) && avgKnee < 150 && kneeVar < 20;
+    
+    // 2. CLEAN & JERK: Fuerte flexión simultánea de codos y rodillas
+    const isClean = (kneeVar > 15 && elbowVar > 15) || (currentSmoothed === 'CLEAN & JERK (Levantamiento)' && (avgKnee < 160 || avgElbow < 150));
+    
+    // 3. SQUAT (Sentadilla): Movimiento en rodilla, codos relativamente quietos (para no confundir con Clean)
+    const isSquat = (kneeVar > 15 || (currentSmoothed === 'SQUAT (Sentadilla)' && avgKnee < 160)) && elbowVar < 20;
+    
+    // 4. PUSHUP (Flexión): Movimiento en codos, piernas y cadera estiradas (>140)
+    const isPushup = (elbowVar > 12 || (currentSmoothed === 'PUSHUP (Flexión)' && avgElbow < 160)) && avgKnee > 140 && avgHip > 140 && kneeVar < 20;
+    
+    // 5. BENCH PRESS: Movimiento en codos, rodillas estáticas y flexionadas (<150), cadera estirada (>140)
+    const isBench = (elbowVar > 12 || (currentSmoothed === 'BENCH PRESS (Press de Banca)' && avgElbow < 160)) && avgKnee < 150 && avgHip > 140 && kneeVar < 20;
 
-    // 3. SITUP (Abdominal): Cadera se flexiona, rodillas flexionadas estáticas
-    if (avgKnee < 150 && kneeVar < 20 && (hipVar > 10 || avgHip < 140)) {
-      return { name: 'SITUP (Abdominal)', confidence: Math.min(0.95, 0.60 + hipVar / 50) };
-    }
-
-    // 4. CLEAN & JERK (Levantamiento): Movimiento compuesto fuerte de rodillas y brazos
-    if (kneeVar > 15 && elbowVar > 15 && avgElbow > 120) {
-      return { name: 'CLEAN & JERK (Levantamiento)', confidence: Math.min(0.90, 0.50 + kneeVar/100 + elbowVar/100) };
-    }
-
-    // 5. SQUAT (Sentadilla): Movimiento principal en rodillas y cadera
-    if (kneeVar > 10 || avgKnee < 160) {
-      return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + kneeVar / 50) };
-    }
+    if (isSitup) return { name: 'SITUP (Abdominal)', confidence: Math.min(0.96, 0.65 + hipVar / 50) };
+    if (isClean) return { name: 'CLEAN & JERK (Levantamiento)', confidence: Math.min(0.92, 0.60 + kneeVar/100 + elbowVar/100) };
+    if (isSquat) return { name: 'SQUAT (Sentadilla)', confidence: Math.min(0.96, 0.65 + kneeVar / 50) };
+    if (isPushup) return { name: 'PUSHUP (Flexión)', confidence: Math.min(0.95, 0.60 + elbowVar / 50) };
+    if (isBench) return { name: 'BENCH PRESS (Press de Banca)', confidence: Math.min(0.92, 0.60 + elbowVar / 50) };
 
     // EJERCICIO GENERAL / PREPARANDO (no clasificado en los 5 modelos)
     return { name: '🟢 PREPARANDO EJERCICIO', confidence: 0.85 };
