@@ -34,23 +34,34 @@ def extract_action_name(mat_data: dict) -> str:
     return str(action_raw)
 
 
+def calc_angle_py(a_x, a_y, b_x, b_y, c_x, c_y):
+    ab_x, ab_y = a_x - b_x, a_y - b_y
+    cb_x, cb_y = c_x - b_x, c_y - b_y
+    dot = ab_x * cb_x + ab_y * cb_y
+    mag_ab = np.sqrt(ab_x**2 + ab_y**2)
+    mag_cb = np.sqrt(cb_x**2 + cb_y**2)
+    if mag_ab * mag_cb < 1e-6:
+        return 180.0
+    cos_theta = dot / (mag_ab * mag_cb)
+    cos_theta = np.clip(cos_theta, -1.0, 1.0)
+    return np.arccos(cos_theta) * (180.0 / np.pi)
+
+
 def assign_posture_label(action: str, x: np.ndarray, y: np.ndarray) -> int:
     """
-    Asigna una etiqueta de calidad postural (0, 1 o 2) de forma heurística
-    basada en métricas geométricas biomecánicas del movimiento, o sirve
-    como plantilla para integrar etiquetas manuales.
+    Asigna una etiqueta de calidad postural (0, 1 o 2) de forma DETERMINISTA
+    y BIOMECÁNICA a partir de las coordenadas de las articulaciones.
     
     Clases:
       0: Postura Correcta
-      1: Error de Espalda / Tronco (desalineación hombro-cadera)
-      2: Error de Extremidades / Rodillas (desalineación rodilla-tobillo / codo)
+      1: Error de Espalda / Tronco (desalineación o inclinación excesiva)
+      2: Error de Extremidades / Rodillas (colapso de rodillas, mala flexión de codos)
     """
     nframes = x.shape[0]
     if nframes < 5:
         return 0
 
-    # Índices clave:
-    # 1, 2: Hombros | 7, 8: Caderas | 9, 10: Rodillas | 11, 12: Tobillos
+    # Puntos medios del torso
     mid_shoulder_x = (x[:, 1] + x[:, 2]) / 2.0
     mid_shoulder_y = (y[:, 1] + y[:, 2]) / 2.0
     mid_hip_x = (x[:, 7] + x[:, 8]) / 2.0
@@ -60,23 +71,69 @@ def assign_posture_label(action: str, x: np.ndarray, y: np.ndarray) -> int:
     dx_trunk = mid_shoulder_x - mid_hip_x
     dy_trunk = mid_shoulder_y - mid_hip_y + 1e-6
     trunk_angles = np.abs(np.arctan2(dx_trunk, dy_trunk) * (180.0 / np.pi))
+    max_trunk_angle = np.max(trunk_angles)
+    avg_trunk_angle = np.mean(trunk_angles)
     trunk_var = np.std(trunk_angles)
 
-    # Variabilidad de rodillas respecto a tobillos (estabilidad lateral/vertical)
-    knee_ankle_dist = np.mean(np.sqrt((x[:, 9] - x[:, 11])**2 + (y[:, 9] - y[:, 11])**2))
+    # Asimetría de hombros
+    shoulder_diff = np.abs(y[:, 1] - y[:, 2])
+    max_shoulder_diff = np.max(shoulder_diff)
 
-    # Reglas heurísticas diferenciadas por tipo de ejercicio para simular variabilidad realista
-    # En un entorno de producción, esto se reemplaza por el archivo de anotación clínica manual.
-    seed_val = int(np.sum(x[0, :])) % 100
-    if action in ["squat", "pushup", "situp"]:
-        if trunk_var > 14.0 or seed_val < 30:
+    # Valgo de rodillas (spread de rodillas vs spread de tobillos)
+    knee_spread = np.abs(x[:, 9] - x[:, 10])
+    ankle_spread = np.abs(x[:, 11] - x[:, 12]) + 1e-6
+    valgus_ratios = knee_spread / ankle_spread
+    min_valgus = np.min(valgus_ratios)
+
+    # Ángulos de flexión
+    knee_angles = [calc_angle_py(x[t, 7], y[t, 7], x[t, 9], y[t, 9], x[t, 11], y[t, 11]) for t in range(nframes)]
+    min_knee_angle = np.min(knee_angles)
+
+    elbow_angles = [calc_angle_py(x[t, 1], y[t, 1], x[t, 3], y[t, 3], x[t, 5], y[t, 5]) for t in range(nframes)]
+    min_elbow_angle = np.min(elbow_angles)
+
+    # Clasificación biomecánica basada en el tipo de ejercicio
+    action_clean = action.lower().strip()
+
+    if "squat" in action_clean:
+        # En squat, inclinar la espalda > 26° o mucha variación es un error de espalda
+        if max_trunk_angle > 26.0 or trunk_var > 12.0:
             return 1  # Error de Espalda / Tronco
-        elif seed_val < 60:
+        # Rodillas colapsando hacia adentro durante la flexión (valgo)
+        elif min_valgus < 0.72 and min_knee_angle < 130.0:
             return 2  # Error de Extremidades / Rodillas
         else:
             return 0  # Postura Correcta
+
+    elif "pushup" in action_clean:
+        # En flexión, la espalda debe mantenerse recta (poca inclinación y variación)
+        if trunk_var > 6.0 or max_trunk_angle > 20.0:
+            return 1  # Error de Espalda / Tronco (cadera caída o arqueada)
+        # Si los codos no se flexionan lo suficiente
+        elif min_elbow_angle > 140.0:
+            return 2  # Error de Extremidades / Rodillas (rango incompleto / codos flácidos)
+        else:
+            return 0  # Postura Correcta
+
+    elif "situp" in action_clean:
+        # En abdominales, levantarse chueco (asimetría de hombros) es un error de espalda
+        if max_shoulder_diff > 0.18:
+            return 1  # Error de Espalda / Tronco
+        # Mantener las piernas totalmente estiradas en lugar de flexionadas
+        elif min_knee_angle > 145.0:
+            return 2  # Error de Extremidades / Rodillas
+        else:
+            return 0  # Postura Correcta
+
     else:
-        return seed_val % 3
+        # General / Fallback
+        if max_trunk_angle > 22.0:
+            return 1
+        elif min_valgus < 0.72 or min_knee_angle > 175.0:
+            return 2
+        else:
+            return 0
+
 
 
 class PennActionPosturalDataset(Dataset):
