@@ -69,7 +69,7 @@ def assign_posture_label(action: str, x: np.ndarray, y: np.ndarray) -> int:
 
     # Inclinación del tronco respecto a la vertical
     dx_trunk = mid_shoulder_x - mid_hip_x
-    dy_trunk = mid_shoulder_y - mid_hip_y + 1e-6
+    dy_trunk = mid_hip_y - mid_shoulder_y + 1e-6  # Positivo si los hombros están arriba de la cadera
     trunk_angles = np.abs(np.arctan2(dx_trunk, dy_trunk) * (180.0 / np.pi))
     max_trunk_angle = np.max(trunk_angles)
     avg_trunk_angle = np.mean(trunk_angles)
@@ -243,16 +243,14 @@ def get_dataloaders(labels_dir: str = LABELS_DIR,
     if len(base_dataset) == 0:
         raise ValueError(f"El dataset está vacío. Verifica que haya archivos .mat en {labels_dir}")
 
-    val_size = int(len(base_dataset) * val_split)
-    train_size = len(base_dataset) - val_size
-
-    generator = torch.Generator().manual_seed(seed)
-    train_indices, val_indices = random_split(range(len(base_dataset)), [train_size, val_size], generator=generator)
+    from sklearn.model_selection import train_test_split
+    labels = [base_dataset.samples[i][1] for i in range(len(base_dataset))]
+    train_indices, val_indices = train_test_split(range(len(base_dataset)), test_size=val_split, random_state=seed, stratify=labels)
 
     # Crear sub-datasets: train con augment=True para prevenir overfitting
     train_dataset = PennActionPosturalDataset(labels_dir=labels_dir, augment=True)
-    train_subset = torch.utils.data.Subset(train_dataset, train_indices.indices)
-    val_subset = torch.utils.data.Subset(base_dataset, val_indices.indices)
+    train_subset = torch.utils.data.Subset(train_dataset, train_indices)
+    val_subset = torch.utils.data.Subset(base_dataset, val_indices)
 
     train_loader = DataLoader(
         train_subset,

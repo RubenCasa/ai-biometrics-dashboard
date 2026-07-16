@@ -97,31 +97,72 @@ def evaluate(model, dataloader, criterion, device):
     return eval_loss, acc, f1, cm
 
 
-def plot_training_curves(train_losses, val_losses, train_accs, val_accs, save_path):
-    """Genera y guarda el gráfico de pérdida y precisión del entrenamiento."""
+def plot_training_curves(train_losses, val_losses, val_accs, val_f1s, save_path, lr=5e-4):
+    """Genera y guarda el gráfico de pérdida y precisión en estilo científico Dark Blue Premium."""
     epochs = range(1, len(train_losses) + 1)
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
-
-    # Gráfico de Pérdida
-    ax1.plot(epochs, train_losses, 'b-o', label='Train Loss')
-    ax1.plot(epochs, val_losses, 'r-s', label='Val Loss')
-    ax1.set_title('Evolución de la Pérdida (Loss)')
-    ax1.set_xlabel('Época')
-    ax1.set_ylabel('CrossEntropyLoss')
-    ax1.legend()
-    ax1.grid(True, linestyle='--', alpha=0.6)
-
-    # Gráfico de Precisión
-    ax2.plot(epochs, train_accs, 'b-o', label='Train Accuracy')
-    ax2.plot(epochs, val_accs, 'g-s', label='Val Accuracy')
-    ax2.set_title('Evolución de la Precisión (Accuracy)')
-    ax2.set_xlabel('Época')
-    ax2.set_ylabel('Precisión')
-    ax2.legend()
-    ax2.grid(True, linestyle='--', alpha=0.6)
-
+    
+    # Configuración de estilo científico dark
+    plt.rcParams['font.family'] = 'sans-serif'
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6.5), facecolor='#0f172a')
+    
+    # Colores base
+    ax1.set_facecolor('#1e293b')
+    ax2.set_facecolor('#1e293b')
+    
+    # --- Gráfico de Pérdida (Loss) ---
+    ax1.plot(epochs, train_losses, color='#06b6d4', marker='o', linewidth=2.5, markersize=5, label='Pérdida de Entrenamiento (Train Loss)')
+    ax1.plot(epochs, val_losses, color='#f43f5e', marker='s', linewidth=2.5, markersize=5, label='Pérdida de Validación (Val Loss)')
+    
+    # Encontrar mejor época (mínima val loss o máxima val F1)
+    best_epoch_idx = np.argmax(val_f1s)
+    best_epoch = epochs[best_epoch_idx]
+    best_loss = val_losses[best_epoch_idx]
+    
+    ax1.axvline(x=best_epoch, color='#10b981', linestyle='--', linewidth=2, label='Early Stopping / Checkpoint')
+    ax1.annotate(f'Época Óptima ({best_epoch})\nLoss: {best_loss:.4f}',
+                 xy=(best_epoch, best_loss), xytext=(best_epoch - 3, best_loss + 0.15),
+                 color='#10b981', fontweight='bold', fontsize=10,
+                 arrowprops=dict(arrowstyle='->', color='#10b981', lw=1.5))
+    
+    ax1.set_title(f'Evolución de la Función de Pérdida (CrossEntropy Loss)\n[lr={lr}, Weight Decay=5e-4, Dropout=0.25]', color='#f8fafc', fontsize=12, fontweight='bold', pad=15)
+    ax1.set_xlabel('Época de Entrenamiento', color='#cbd5e1', fontsize=11)
+    ax1.set_ylabel('Pérdida (Loss)', color='#cbd5e1', fontsize=11)
+    ax1.tick_params(colors='#94a3b8', labelsize=10)
+    ax1.grid(True, linestyle=':', alpha=0.3, color='#64748b')
+    ax1.legend(loc='upper right', facecolor='#0f172a', edgecolor='#334155', labelcolor='#f8fafc', fontsize=9.5)
+    
+    # --- Gráfico de Rendimiento (Accuracy & F1-Score) ---
+    val_accs_pct = [acc * 100 for acc in val_accs]
+    ax2.plot(epochs, val_accs_pct, color='#10b981', marker='D', linewidth=2.5, markersize=5, label='Precisión de Validación (Accuracy %)')
+    
+    ax2.set_title('Métricas de Rendimiento y Generalización en Validación\n[1D-CNN + BiLSTM con ResNet Shortcuts en Penn Action]', color='#f8fafc', fontsize=12, fontweight='bold', pad=15)
+    ax2.set_xlabel('Época de Entrenamiento', color='#cbd5e1', fontsize=11)
+    ax2.set_ylabel('Precisión (%)', color='#10b981', fontsize=11)
+    ax2.tick_params(axis='y', colors='#10b981', labelsize=10)
+    ax2.tick_params(axis='x', colors='#94a3b8', labelsize=10)
+    ax2.grid(True, linestyle=':', alpha=0.3, color='#64748b')
+    
+    # Segundo eje para F1-Score
+    ax2_f1 = ax2.twinx()
+    ax2_f1.plot(epochs, val_f1s, color='#f59e0b', marker='^', linestyle='--', linewidth=2.2, markersize=5, label='Macro F1-Score')
+    ax2_f1.set_ylabel('F1-Score', color='#f59e0b', fontsize=11)
+    ax2_f1.tick_params(axis='y', colors='#f59e0b', labelsize=10)
+    
+    # Anotación del máximo rendimiento
+    max_acc = val_accs_pct[best_epoch_idx]
+    max_f1 = val_f1s[best_epoch_idx]
+    ax2.annotate(f'Acc Máxima: {max_acc:.1f}%\nF1-Score: {max_f1:.3f}',
+                 xy=(best_epoch, max_acc), xytext=(best_epoch - 5, max_acc - 10),
+                 color='#10b981', fontweight='bold', fontsize=10,
+                 arrowprops=dict(arrowstyle='->', color='#10b981', lw=1.5))
+    
+    # Combinar leyendas de ax2 y ax2_f1
+    lines1, labels1 = ax2.get_legend_handles_labels()
+    lines2, labels2 = ax2_f1.get_legend_handles_labels()
+    ax2.legend(lines1 + lines2, labels1 + labels2, loc='lower right', facecolor='#0f172a', edgecolor='#334155', labelcolor='#f8fafc', fontsize=9.5)
+    
     plt.tight_layout()
-    plt.savefig(save_path, dpi=300)
+    plt.savefig(save_path, dpi=300, facecolor=fig.get_facecolor(), edgecolor='none')
     plt.close()
     print(f"[GRÁFICO] Curvas de entrenamiento guardadas en: {save_path}")
 
@@ -170,7 +211,7 @@ def main(epochs: int = 35, batch_size: int = 32, lr: float = 5e-4):
     best_model_path = os.path.join(MODELS_DIR, "modelo.pth")
 
     train_losses, val_losses = [], []
-    train_accs, val_accs = [], []
+    train_accs, val_accs, val_f1s = [], [], []
 
     print(f"[ENTRENAMIENTO] Iniciando bucle de entrenamiento por hasta {epochs} épocas (con Early Stopping)...")
     for epoch in range(1, epochs + 1):
@@ -183,6 +224,7 @@ def main(epochs: int = 35, batch_size: int = 32, lr: float = 5e-4):
         val_losses.append(val_loss)
         train_accs.append(tr_acc)
         val_accs.append(val_acc)
+        val_f1s.append(val_f1)
 
         print(f"Época [{epoch:02d}/{epochs:02d}] "
               f"| Train Loss: {tr_loss:.4f} | Train Acc: {tr_acc*100:.1f}% "
@@ -218,7 +260,7 @@ def main(epochs: int = 35, batch_size: int = 32, lr: float = 5e-4):
 
     # Exportar gráfico de entrenamiento
     plot_path = os.path.join(MODELS_DIR, "training_curves.png")
-    plot_training_curves(train_losses, val_losses, train_accs, val_accs, plot_path)
+    plot_training_curves(train_losses, val_losses, val_accs, val_f1s, plot_path, lr=lr)
 
 
 if __name__ == "__main__":
