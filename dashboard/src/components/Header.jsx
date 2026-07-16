@@ -66,60 +66,6 @@ export default function Header({ onToggleSidebar, activeMenu }) {
         </div>
       </div>
 
-      {/* Sección Derecha: Flecha / Badge "Cambiando al Ecuador mira" */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        <div className="ecuador-badge" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(0, 240, 255, 0.14) 100%)',
-          border: '1px solid #10b981',
-          padding: '10px 22px',
-          borderRadius: '9999px',
-          boxShadow: '0 0 26px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255,255,255,0.15)',
-          transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
-          cursor: 'default'
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-          e.currentTarget.style.boxShadow = '0 6px 30px rgba(16, 185, 129, 0.45), inset 0 1px 0 rgba(255,255,255,0.25)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.transform = '';
-          e.currentTarget.style.boxShadow = '0 0 26px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255,255,255,0.15)';
-        }}
-        >
-          <span style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: '#10b981',
-            boxShadow: '0 0 10px #10b981',
-            display: 'inline-block',
-            animation: 'pulseEcuador 1.5s infinite ease-in-out'
-          }} />
-          <span style={{
-            fontSize: '0.88rem',
-            color: '#ffffff',
-            fontWeight: 900,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            🇪🇨 CAMBIANDO AL ECUADOR <span style={{ color: '#00f0ff', fontSize: '1.1rem', transition: 'transform 0.2s ease' }}>➔</span> MIRA
-          </span>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes pulseEcuador {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.3); opacity: 0.6; }
-        }
-      `}</style>
     </header>
   );
 }
