@@ -82,7 +82,7 @@ export default function Hero({ onStart }) {
             e.currentTarget.style.boxShadow = '0 10px 30px rgba(161, 255, 79, 0.3)';
           }}
         >
-          INICIAR DASHBOARD ↓
+          INICIAR DASHBOARD
         </button>
 
         {/* Textos y Branding integrados al Hero */}
@@ -105,9 +105,6 @@ export default function Hero({ onStart }) {
             <span style={{ fontSize: '0.75rem', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(255, 255, 255, 0.08)', padding: '8px 16px', borderRadius: '9999px', border: '1px solid rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981', display: 'inline-block', animation: 'pulse 1.5s infinite ease-in-out' }} />
               🇪🇨 CAMBIANDO AL ECUADOR ➔ MIRA
-            </span>
-            <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(245, 158, 11, 0.08)', padding: '8px 16px', borderRadius: '9999px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-              ⚡ INFERENCIA NEURAL 2D/3D EN VIVO
             </span>
           </div>
 

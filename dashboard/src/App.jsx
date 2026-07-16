@@ -24,6 +24,7 @@ export default function App() {
   
   // Estado para la barra de mando entre los modos
   const [activeMenu, setActiveMenu] = useState('live');
+  const [dashboardStarted, setDashboardStarted] = useState(false);
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
 
@@ -126,65 +127,60 @@ export default function App() {
 
   return (
     <div className="app-root">
-      {/* Si estamos en el modo principal, mostramos el Hero arriba del todo */}
-      {activeMenu === 'live' && (
-        <Hero onStart={() => {
-          document.getElementById('dashboard-start')?.scrollIntoView({ behavior: 'smooth' });
-        }} />
-      )}
+      {!dashboardStarted ? (
+        <Hero onStart={() => setDashboardStarted(true)} />
+      ) : (
+        <>
+          {activeMenu === 'live' && (
+            <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
+              <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
+                <Sidebar
+                  sequences={sequences}
+                  currentSeqIdx={currentSeqIdx}
+                  onSelectSeq={handleSelectSeq}
+                  onSelectExampleVideo={handleSelectExampleVideo}
+                  onUploadVideo={handleUploadVideo}
+                />
+              </div>
+              <div className="main-content">
+                <KpiStrip seq={currentSeq} isLive={currentSeq.isUserVideo} />
 
-      {/* Un ancla invisible para hacer scroll */}
-      <div id="dashboard-start" />
+                <div className="viewer-grid">
+                  <SkeletonCanvas
+                    seq={currentSeq}
+                    videoSrc={userVideoSrc}
+                    isPlaying={isPlaying}
+                    onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    frameIdx={frameIdx}
+                    onFrameChange={setFrameIdx}
+                    onLiveAssessmentUpdate={handleLiveAssessmentUpdate}
+                    isWebcam={false}
+                  />
+                  <FeedbackCard seq={currentSeq} />
+                </div>
 
-
-      {activeMenu === 'live' && (
-        <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
-          <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
-            <Sidebar
-              sequences={sequences}
-              currentSeqIdx={currentSeqIdx}
-              onSelectSeq={handleSelectSeq}
-              onSelectExampleVideo={handleSelectExampleVideo}
-              onUploadVideo={handleUploadVideo}
-            />
-          </div>
-          <div className="main-content">
-            <KpiStrip seq={currentSeq} isLive={currentSeq.isUserVideo} />
-
-            <div className="viewer-grid">
-              <SkeletonCanvas
-                seq={currentSeq}
-                videoSrc={userVideoSrc}
-                isPlaying={isPlaying}
-                onTogglePlay={() => setIsPlaying(!isPlaying)}
-                frameIdx={frameIdx}
-                onFrameChange={setFrameIdx}
-                onLiveAssessmentUpdate={handleLiveAssessmentUpdate}
-                isWebcam={false}
-              />
-              <FeedbackCard seq={currentSeq} />
+                <ChartsPanel seq={currentSeq} />
+              </div>
             </div>
+          )}
 
-            <ChartsPanel seq={currentSeq} />
-          </div>
-        </div>
-      )}
+          {activeMenu === 'demos' && (
+            <DemosGallery onSelectDemo={handleSelectExampleVideo} />
+          )}
 
-      {activeMenu === 'demos' && (
-        <DemosGallery onSelectDemo={handleSelectExampleVideo} />
-      )}
+          {activeMenu === 'dataset' && (
+            <DatasetView onSelectDatasetItem={handleSelectSeq} />
+          )}
 
-      {activeMenu === 'dataset' && (
-        <DatasetView onSelectDatasetItem={handleSelectSeq} />
-      )}
+          {activeMenu === 'guide' && (
+            <GuideView onGoToLive={() => setActiveMenu('live')} />
+          )}
 
-      {activeMenu === 'guide' && (
-        <GuideView onGoToLive={() => setActiveMenu('live')} />
-      )}
-
-      {/* Overlay para cerrar sidebar en móvil */}
-      {sidebarOpen && activeMenu === 'live' && (
-        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+          {/* Overlay para cerrar sidebar en móvil */}
+          {sidebarOpen && activeMenu === 'live' && (
+            <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+          )}
+        </>
       )}
     </div>
   );

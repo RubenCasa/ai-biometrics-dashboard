@@ -72,25 +72,7 @@ export default function ModeSelectorDock({ activeMenu, onSelectMenu }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <div style={{
-          background: '#14181d',
-          border: '1px solid #00f0ff',
-          padding: '10px 20px',
-          borderRadius: '9999px',
-          fontSize: '0.76rem',
-          color: '#00f0ff',
-          fontWeight: 900,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          boxShadow: '0 0 20px rgba(0, 240, 255, 0.2)'
-        }}>
-          <span>⚡ INFERENCIA NEURAL 2D/3D EN VIVO</span>
-        </div>
-      </div>
+
     </div>
   );
 }
