@@ -409,7 +409,139 @@ export default function SkeletonCanvas({
         }
       }
       // =========================================================================
-      // MODO 2: VIDEO SUBIDO POR EL USUARIO (MediaPipe Pose 3D)
+      // MODO 2: CÁMARA WEB EN VIVO (MediaPipe Pose 3D a 60 FPS)
+      // =========================================================================
+      else if (isWebcam || (seq && seq.isWebcam)) {
+        const webcamSource = webcamRef.current;
+        const isWebcamReady = webcamSource && webcamSource.readyState >= 2 && webcamActive;
+
+        if (isWebcamReady) {
+          ctx.drawImage(webcamSource, 0, 0, canvas.width, canvas.height);
+
+          if (mpReady && mpPoseRef.current && !processingFrameRef.current) {
+            processingFrameRef.current = true;
+            mpCtx.drawImage(webcamSource, 0, 0, mpCanvasRef.current.width, mpCanvasRef.current.height);
+            mpPoseRef.current.send({ image: mpCanvasRef.current })
+              .then(() => {
+                processingFrameRef.current = false;
+              })
+              .catch((e) => {
+                console.warn('[MediaPipe Webcam Send Warning]:', e.message || e);
+                processingFrameRef.current = false;
+              });
+          }
+        } else {
+          ctx.fillStyle = '#080b11';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+          ctx.fillRect(canvas.width / 2 - 200, canvas.height / 2 - 22, 400, 44);
+          ctx.fillStyle = webcamError ? '#ef4444' : '#00f0ff';
+          ctx.font = 'bold 13px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          const msg = webcamError ? webcamError : (!mpReady ? '⚡ CARGANDO MOTOR IA MEDIAPIPE CDN...' : '📷 INICIANDO CÁMARA WEB EN VIVO...');
+          ctx.fillText(msg, canvas.width / 2, canvas.height / 2 + 5);
+          ctx.textAlign = 'start';
+        }
+
+        ctx.fillStyle = 'rgba(8, 11, 17, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const statusColor = seq.clase === 0 ? '#10b981' : seq.clase === 1 ? '#ef4444' : '#f59e0b';
+
+        // HUD superior para cámara web
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(10, 10, canvas.width - 20, 62);
+        ctx.fillStyle = statusColor;
+        ctx.font = 'bold 12px "JetBrains Mono", monospace';
+        const sourceLabel = '📷 CÁMARA WEB EN VIVO (IA 60 FPS)';
+        ctx.fillText(`● ${sourceLabel} | ${seq.action}`, 18, 30);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '11px "JetBrains Mono", monospace';
+        ctx.fillText(`DIAGNÓSTICO: ${seq.nombre?.toUpperCase()} | CONFIANZA: ${(seq.confianza * 100).toFixed(1)}%`, 18, 48);
+
+        if (seq.repCount > 0) {
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 11px "JetBrains Mono", monospace';
+          ctx.fillText(`REPS: ${seq.repCount} | FASE: ${seq.phase?.toUpperCase() || 'IDLE'}`, 18, 62);
+        }
+
+        if (seq.qualityScore !== undefined && seq.qualityScore > 0) {
+          const scoreX = canvas.width - 90;
+          const scoreY = 42;
+          const scoreRadius = 26;
+          const scoreAngle = (seq.qualityScore / 100) * Math.PI * 2;
+
+          ctx.beginPath();
+          ctx.arc(scoreX, scoreY, scoreRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+          ctx.lineWidth = 5;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(scoreX, scoreY, scoreRadius, -Math.PI / 2, -Math.PI / 2 + scoreAngle);
+          ctx.strokeStyle = statusColor;
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 14px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${seq.qualityScore.toFixed(0)}`, scoreX, scoreY + 5);
+          ctx.textAlign = 'start';
+        }
+
+        const lm = mpLandmarksRef.current;
+        if (lm && isWebcamReady) {
+          const joints = MP_TO_PENN.map(idx => ({
+            x: lm[idx].x * canvas.width,
+            y: lm[idx].y * canvas.height,
+            vis: lm[idx].visibility
+          }));
+
+          ctx.lineCap = 'round';
+          PENN_CONNECTIONS.forEach(([i, j]) => {
+            if (joints[i].vis > 0.15 && joints[j].vis > 0.15) {
+              ctx.strokeStyle = statusColor;
+              ctx.lineWidth = 8;
+              ctx.globalAlpha = 0.25;
+              ctx.beginPath();
+              ctx.moveTo(joints[i].x, joints[i].y);
+              ctx.lineTo(joints[j].x, joints[j].y);
+              ctx.stroke();
+
+              ctx.globalAlpha = 1.0;
+              ctx.lineWidth = 4;
+              ctx.beginPath();
+              ctx.moveTo(joints[i].x, joints[i].y);
+              ctx.lineTo(joints[j].x, joints[j].y);
+              ctx.stroke();
+            }
+          });
+
+          joints.forEach(pt => {
+            if (pt.vis > 0.15) {
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 12, 0, Math.PI * 2);
+              ctx.fillStyle = statusColor;
+              ctx.globalAlpha = 0.15;
+              ctx.fill();
+              ctx.globalAlpha = 1.0;
+
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+              ctx.fillStyle = '#ffffff';
+              ctx.fill();
+              ctx.lineWidth = 2.5;
+              ctx.strokeStyle = statusColor;
+              ctx.stroke();
+            }
+          });
+        }
+      }
+      // =========================================================================
+      // MODO 3: VIDEO SUBIDO POR EL USUARIO (MediaPipe Pose 3D)
       // =========================================================================
       else if (seq.isUploadedVideo) {
         const videoSource = videoRef.current;
@@ -682,6 +814,15 @@ export default function SkeletonCanvas({
         />
       )}
 
+      {/* Video oculto para stream de cámara web en vivo */}
+      <video
+        ref={webcamRef}
+        autoPlay
+        playsInline
+        muted
+        style={{ display: 'none' }}
+      />
+
       {/* Barra de Controles de Reproducción y Fotogramas (Estilo Dock Telemetría) */}
       <div className="canvas-controls" style={{
         display: 'flex',
@@ -742,7 +883,7 @@ export default function SkeletonCanvas({
 
           <button
             onClick={() => onFrameChange((frameIdx + 1) % 46)}
-            disabled={seq.isUploadedVideo || isPlaying}
+            disabled={seq.isUploadedVideo || isWebcam || (seq && seq.isWebcam) || isPlaying}
             title="Siguiente fotograma (+1 frame)"
             style={{
               background: 'rgba(255, 255, 255, 0.06)',
@@ -750,8 +891,8 @@ export default function SkeletonCanvas({
               color: '#ffffff',
               borderRadius: '10px',
               padding: '8px 12px',
-              cursor: (seq.isUploadedVideo || isPlaying) ? 'not-allowed' : 'pointer',
-              opacity: (seq.isUploadedVideo || isPlaying) ? 0.4 : 1,
+              cursor: (seq.isUploadedVideo || isWebcam || (seq && seq.isWebcam) || isPlaying) ? 'not-allowed' : 'pointer',
+              opacity: (seq.isUploadedVideo || isWebcam || (seq && seq.isWebcam) || isPlaying) ? 0.4 : 1,
               transition: 'all 0.2s ease',
               fontFamily: 'var(--font-mono)'
             }}
@@ -781,11 +922,11 @@ export default function SkeletonCanvas({
             max="45"
             value={frameIdx}
             onChange={(e) => onFrameChange(Number(e.target.value))}
-            disabled={seq.isUploadedVideo}
+            disabled={seq.isUploadedVideo || isWebcam || (seq && seq.isWebcam)}
             style={{
               flex: 1,
               accentColor: '#00f0ff',
-              cursor: seq.isUploadedVideo ? 'not-allowed' : 'pointer',
+              cursor: (seq.isUploadedVideo || isWebcam || (seq && seq.isWebcam)) ? 'not-allowed' : 'pointer',
               height: '6px'
             }}
           />
@@ -800,7 +941,7 @@ export default function SkeletonCanvas({
             fontFamily: 'var(--font-mono)',
             whiteSpace: 'nowrap'
           }}>
-            {seq.isUploadedVideo ? '📁 STREAM EN VIVO' : `FRAME ${(frameIdx % 46) + 1} / 46`}
+            {isWebcam || (seq && seq.isWebcam) ? '📷 WEBCAM 60 FPS' : (seq.isUploadedVideo ? '📁 STREAM EN VIVO' : `FRAME ${(frameIdx % 46) + 1} / 46`)}
           </div>
         </div>
       </div>

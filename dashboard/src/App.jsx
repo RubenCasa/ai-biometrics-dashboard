@@ -111,6 +111,44 @@ export default function App() {
     resetDetector();
   };
 
+  // Iniciar inferencia con cámara web en vivo
+  const handleStartWebcam = () => {
+    const webcamSeq = {
+      id: "WEBCAM-LIVE",
+      vidId: null,
+      action: "CÁMARA WEB EN VIVO",
+      clase: 0,
+      confianza: 0.95,
+      nombre: "Analizando cámara con MediaPipe...",
+      feedback: "⏳ MediaPipe Pose IA está analizando tu cámara web en tiempo real. Colócate frente a la cámara para evaluar tu técnica y ángulos articulares a 60 FPS...",
+      type: "correct",
+      isUserVideo: true,
+      isUploadedVideo: false,
+      isWebcam: true,
+      repCount: 0,
+      phase: 'idle',
+      qualityScore: 95
+    };
+    setSequences(prev => {
+      const existingIdx = prev.findIndex(s => s.id === "WEBCAM-LIVE");
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = webcamSeq;
+        return copy;
+      }
+      return [...prev, webcamSeq];
+    });
+    setSequences(prev => {
+      const idx = prev.findIndex(s => s.id === "WEBCAM-LIVE");
+      if (idx >= 0) setCurrentSeqIdx(idx);
+      return prev;
+    });
+    setIsWebcam(true);
+    setFrameIdx(0);
+    setActiveMenu('live');
+    resetDetector();
+  };
+
   // Retorno de predicciones del motor neural (Sincronizado de SkeletonCanvas)
   const handleLiveAssessmentUpdate = (update) => {
     setSequences(prev => {
@@ -140,6 +178,7 @@ export default function App() {
                   onSelectSeq={handleSelectSeq}
                   onSelectExampleVideo={handleSelectExampleVideo}
                   onUploadVideo={handleUploadVideo}
+                  onStartWebcam={handleStartWebcam}
                 />
               </div>
               <div className="main-content">
@@ -154,7 +193,7 @@ export default function App() {
                     frameIdx={frameIdx}
                     onFrameChange={setFrameIdx}
                     onLiveAssessmentUpdate={handleLiveAssessmentUpdate}
-                    isWebcam={false}
+                    isWebcam={isWebcam}
                   />
                   <FeedbackCard seq={currentSeq} />
                 </div>

@@ -61,6 +61,31 @@ export default function Sidebar({
 
       {/* Botones principales INK Pill */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+        <button
+          className="btn btn-webcam"
+          style={{
+            width: '100%',
+            justifyContent: 'center',
+            padding: '14px 20px',
+            background: 'linear-gradient(135deg, #00f0ff, #38bdf8)',
+            color: '#000000',
+            fontSize: '0.88rem',
+            fontWeight: 900,
+            borderRadius: '9999px',
+            cursor: 'pointer',
+            border: '1px solid #00f0ff',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            boxShadow: '0 0 20px rgba(0, 240, 255, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={onStartWebcam}
+        >
+          📷 ACTIVAR CÁMARA WEB (IA 60 FPS)
+        </button>
+
         <input
           type="file"
           ref={fileInputRef}
