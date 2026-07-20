@@ -19,7 +19,6 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [frameIdx, setFrameIdx] = useState(0);
   const [userVideoSrc, setUserVideoSrc] = useState('/demo_squat.mp4');
-  const [isWebcam, setIsWebcam] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Estado para la barra de mando entre los modos
@@ -28,21 +27,21 @@ export default function App() {
 
   const currentSeq = sequences[currentSeqIdx] || sequences[0];
 
-  // Bucle de animación temporal para fotogramas del dataset y demos
+  // Bucle de animación dinámico — usa framesCount real de la secuencia (fallback 46)
   useEffect(() => {
     if (!isPlaying) return;
+    const totalFrames = currentSeq?.framesCount || 46;
     const interval = setInterval(() => {
-      setFrameIdx(prev => (prev + 1) % 46);
+      setFrameIdx(prev => (prev + 1) % totalFrames);
     }, 70);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, currentSeq?.framesCount]);
 
   // Manejar selección de secuencia base Penn Action
   const handleSelectSeq = (index) => {
     setCurrentSeqIdx(index);
     setFrameIdx(0);
-    setIsWebcam(false);
-    setActiveMenu('live'); // Saltar directo al estudio para ver el gráfico y evaluación
+    setActiveMenu('live');
     resetDetector();
   };
 
@@ -67,8 +66,7 @@ export default function App() {
     setUserVideoSrc('/' + example.file);
     setCurrentSeqIdx(sequences.length);
     setFrameIdx(0);
-    setIsWebcam(false);
-    setActiveMenu('live'); // Cambiar al estudio en vivo
+    setActiveMenu('live');
     resetDetector();
   };
 
@@ -106,48 +104,11 @@ export default function App() {
     });
     setUserVideoSrc(videoURL);
     setFrameIdx(0);
-    setIsWebcam(false);
     setActiveMenu('live');
     resetDetector();
   };
 
-  // Iniciar inferencia con cámara web en vivo
-  const handleStartWebcam = () => {
-    const webcamSeq = {
-      id: "WEBCAM-LIVE",
-      vidId: null,
-      action: "CÁMARA WEB EN VIVO",
-      clase: 0,
-      confianza: 0.95,
-      nombre: "Analizando cámara con MediaPipe...",
-      feedback: "⏳ MediaPipe Pose IA está analizando tu cámara web en tiempo real. Colócate frente a la cámara para evaluar tu técnica y ángulos articulares a 60 FPS...",
-      type: "correct",
-      isUserVideo: true,
-      isUploadedVideo: false,
-      isWebcam: true,
-      repCount: 0,
-      phase: 'idle',
-      qualityScore: 95
-    };
-    setSequences(prev => {
-      const existingIdx = prev.findIndex(s => s.id === "WEBCAM-LIVE");
-      if (existingIdx >= 0) {
-        const copy = [...prev];
-        copy[existingIdx] = webcamSeq;
-        return copy;
-      }
-      return [...prev, webcamSeq];
-    });
-    setSequences(prev => {
-      const idx = prev.findIndex(s => s.id === "WEBCAM-LIVE");
-      if (idx >= 0) setCurrentSeqIdx(idx);
-      return prev;
-    });
-    setIsWebcam(true);
-    setFrameIdx(0);
-    setActiveMenu('live');
-    resetDetector();
-  };
+
 
   // Retorno de predicciones del motor neural (Sincronizado de SkeletonCanvas)
   const handleLiveAssessmentUpdate = (update) => {
@@ -178,7 +139,6 @@ export default function App() {
                   onSelectSeq={handleSelectSeq}
                   onSelectExampleVideo={handleSelectExampleVideo}
                   onUploadVideo={handleUploadVideo}
-                  onStartWebcam={handleStartWebcam}
                 />
               </div>
               <div className="main-content">
@@ -193,7 +153,7 @@ export default function App() {
                     frameIdx={frameIdx}
                     onFrameChange={setFrameIdx}
                     onLiveAssessmentUpdate={handleLiveAssessmentUpdate}
-                    isWebcam={isWebcam}
+                    isWebcam={false}
                   />
                   <FeedbackCard seq={currentSeq} />
                 </div>
