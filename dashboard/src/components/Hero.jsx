@@ -40,7 +40,7 @@ export default function Hero({ onStart }) {
         }}>
           <span style={{ display: 'block' }}>ÚNETE A LA</span>
           <span style={{ display: 'block' }}>NUEVA ERA DE LA</span>
-          <span style={{ display: 'block', background: 'linear-gradient(135deg, #00f0ff 0%, #38bdf8 50%, #818cf8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 4px 30px rgba(0, 240, 255, 0.6))' }}>BIOMECÁNICA</span>
+          <span style={{ display: 'block', background: 'linear-gradient(135deg, #00f0ff 0%, #7dd3fc 50%, #ffffff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 4px 30px rgba(0, 240, 255, 0.6))' }}>BIOMECÁNICA</span>
         </h1>
         
         <p style={{
