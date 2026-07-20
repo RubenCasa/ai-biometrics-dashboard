@@ -40,7 +40,7 @@ export default function Hero({ onStart }) {
         }}>
           <span style={{ display: 'block' }}>ÚNETE A LA</span>
           <span style={{ display: 'block' }}>NUEVA ERA DE LA</span>
-          <span style={{ display: 'block', background: 'linear-gradient(180deg, #ffffff 0%, #a1ff4f 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 4px 20px rgba(161, 255, 79, 0.4))' }}>BIOMETRÍA</span>
+          <span style={{ display: 'block', background: 'linear-gradient(180deg, #ffffff 0%, #a1ff4f 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 4px 20px rgba(161, 255, 79, 0.4))' }}>BIOMECÁNICA</span>
         </h1>
         
         <p style={{
@@ -52,7 +52,7 @@ export default function Hero({ onStart }) {
           fontWeight: 500,
           fontFamily: 'var(--font-main, sans-serif)'
         }}>
-          Corrección postural en tiempo real impulsada por Inteligencia Artificial. Haz scroll hacia abajo o presiona el botón para empezar.
+          Corrección postural en tiempo real impulsada por Inteligencia Artificial.
         </p>
         
         <button 
