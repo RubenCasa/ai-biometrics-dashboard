@@ -421,7 +421,7 @@ export default function ChartsPanel({ seq }) {
               animation: 'pulse 1.5s ease infinite',
             }} />
             <span style={{ fontSize: '0.78rem', color: hasRealData ? C.green : C.blue, fontWeight: 800, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>
-              {hasRealData ? `${stats.frames} FRAMES REALES` : '60 FRAMES REALES'}
+              {hasRealData ? `${stats.frames} FRAMES REALES` : '46 FRAMES REALES'}
             </span>
           </div>
 
