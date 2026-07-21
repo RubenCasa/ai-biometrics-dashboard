@@ -9,6 +9,7 @@ export default function Sidebar({
   onUploadVideo
 }) {
   const fileInputRef = useRef(null);
+  const [showExercises, setShowExercises] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -36,26 +37,36 @@ export default function Sidebar({
         Sube cualquier archivo de video (MP4/MOV) para corrección y análisis biomecánico en tiempo real con IA:
       </p>
 
-      {/* Nota de modelos soportados */}
+      {/* Nota de modelos soportados — colapsable */}
       <div style={{
         background: 'rgba(255, 183, 3, 0.1)',
         border: '1px solid rgba(255, 183, 3, 0.3)',
         borderRadius: '12px',
-        padding: '12px',
+        padding: '10px 12px',
         marginBottom: '18px',
         fontSize: '0.74rem',
         color: '#cbd5e1',
         lineHeight: 1.5
       }}>
-        <strong style={{ color: '#ffb703', display: 'block', marginBottom: '4px' }}>⚠️ EJERCICIOS SOPORTADOS:</strong>
-        El modelo reconoce estas variantes específicas del dataset Penn Action:
-        <span style={{ color: 'var(--accent-green, #a1ff4f)', fontWeight: 'bold', display: 'block', marginTop: '6px', lineHeight: 1.8 }}>
-          🦵 Squat — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>sentadilla convencional de cuádriceps (barra espalda, pies ancho hombros). <em>No reconoce sumo ni glúteos.</em></span><br/>
-          💪 Pushup — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>flexión de pecho estándar en el suelo.</span><br/>
-          🏋️ Situp — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>abdominal clásico con manos detrás de la cabeza.</span><br/>
-          🔩 Bench Press — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>press de banca horizontal con barra.</span><br/>
-          ⚡ Clean &amp; Jerk — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>levantamiento olímpico completo.</span>
-        </span>
+        <button
+          onClick={() => setShowExercises(prev => !prev)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+          }}
+        >
+          <strong style={{ color: '#ffb703' }}>⚠️ EJERCICIOS SOPORTADOS</strong>
+          <span style={{ color: '#ffb703', fontSize: '0.8rem' }}>{showExercises ? '▲ ocultar' : '▼ ver lista'}</span>
+        </button>
+        {showExercises && (
+          <span style={{ color: 'var(--accent-green, #a1ff4f)', fontWeight: 'bold', display: 'block', marginTop: '8px', lineHeight: 1.9 }}>
+            🦵 Squat — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>sentadilla convencional cuádriceps. <em>No sumo/glúteos.</em></span><br/>
+            💪 Pushup — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>flexión de pecho en el suelo.</span><br/>
+            🏋️ Situp — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>abdominal con manos detrás de la cabeza.</span><br/>
+            🔩 Bench Press — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>press de banca horizontal.</span><br/>
+            ⚡ Clean &amp; Jerk — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>levantamiento olímpico.</span>
+          </span>
+        )}
       </div>
 
       {/* Botón principal INK Pill */}
@@ -89,7 +100,6 @@ export default function Sidebar({
         </button>
       </div>
 
-
       {/* LISTA DE VIDEOS DE EJEMPLO */}
       <div className="card-title" style={{ fontSize: '0.88rem', color: 'var(--accent-blue, #00f0ff)', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span>🎬 VIDEOS DE EJEMPLO LISTOS</span>
@@ -97,7 +107,7 @@ export default function Sidebar({
           {filteredDemos.length}
         </span>
       </div>
-      <div className="sequence-list" style={{ marginBottom: '20px', maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="sequence-list" style={{ marginBottom: '20px', maxHeight: '420px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {filteredDemos.map((demo) => (
           <div
             key={demo.id}
@@ -137,7 +147,7 @@ export default function Sidebar({
       <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
         <div className="card-title" style={{ fontSize: '0.82rem', color: 'var(--text-dim)', marginBottom: '6px' }}>🧠 MOTOR BIOMECÁNICO PRO</div>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', lineHeight: 1.6 }}>
-          Inferencia 60 FPS · 33 landmarks 3D MediaPipe · Filtro de Kalman & EMA adaptativo.
+          Inferencia 60 FPS · 33 landmarks 3D MediaPipe · Filtro de Kalman &amp; EMA adaptativo.
         </div>
       </div>
     </div>
