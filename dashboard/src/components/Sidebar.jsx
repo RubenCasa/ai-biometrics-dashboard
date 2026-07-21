@@ -47,14 +47,14 @@ export default function Sidebar({
         color: '#cbd5e1',
         lineHeight: 1.5
       }}>
-        <strong style={{ color: '#ffb703', display: 'block', marginBottom: '4px' }}>⚠️ MODELOS ENTRENADOS:</strong>
-        Por el momento nuestro modelo de IA está entrenado exclusivamente para ejecutar:
-        <span style={{ color: 'var(--accent-green, #a1ff4f)', fontWeight: 'bold', display: 'block', marginTop: '4px' }}>
-          • Squat (Sentadilla)<br/>
-          • Pushup (Flexión)<br/>
-          • Situp (Abdominal)<br/>
-          • Bench Press (Press de Banca)<br/>
-          • Clean & Jerk (Levantamiento)
+        <strong style={{ color: '#ffb703', display: 'block', marginBottom: '4px' }}>⚠️ EJERCICIOS SOPORTADOS:</strong>
+        El modelo reconoce estas variantes específicas del dataset Penn Action:
+        <span style={{ color: 'var(--accent-green, #a1ff4f)', fontWeight: 'bold', display: 'block', marginTop: '6px', lineHeight: 1.8 }}>
+          🦵 Squat — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>sentadilla convencional de cuádriceps (barra espalda, pies ancho hombros). <em>No reconoce sumo ni glúteos.</em></span><br/>
+          💪 Pushup — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>flexión de pecho estándar en el suelo.</span><br/>
+          🏋️ Situp — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>abdominal clásico con manos detrás de la cabeza.</span><br/>
+          🔩 Bench Press — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>press de banca horizontal con barra.</span><br/>
+          ⚡ Clean &amp; Jerk — <span style={{ color: '#cbd5e1', fontWeight: 500 }}>levantamiento olímpico completo.</span>
         </span>
       </div>
 
