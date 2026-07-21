@@ -235,7 +235,7 @@ export default function ChartsPanel({ seq }) {
     const qualityScore = seq.qualityScore ?? (seq.confianza * 100) ?? 76.0;
     const repCount = seq.repCount ?? 1;
     const exerciseName = seq.exercise || seq.action || seq.nombre || 'SQUAT';
-    const framesCount = history.length > 0 ? history.length : 60;
+    const framesCount = history.length > 0 ? history.length : 46;
 
     return {
       activeJointName,
