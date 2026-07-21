@@ -362,48 +362,78 @@ export default function SkeletonCanvas({
           if (curFrameIdx !== lastReportedFrameRef.current && frameData.joints && frameData.joints.length >= 13) {
             lastReportedFrameRef.current = curFrameIdx;
             const j = frameData.joints;
-            const midSh = { x: (j[1].x + j[2].x) / 2, y: (j[1].y + j[2].y) / 2 };
+
+            // ── Ángulos reales por geometría de 3 puntos (a→b→c) ──
+            const calcAngle = (a, b, c) => {
+              const ab = { x: a.x - b.x, y: a.y - b.y };
+              const cb = { x: c.x - b.x, y: c.y - b.y };
+              const dot = ab.x * cb.x + ab.y * cb.y;
+              const mag = Math.sqrt(ab.x**2 + ab.y**2) * Math.sqrt(cb.x**2 + cb.y**2);
+              return mag > 0 ? Math.acos(Math.max(-1, Math.min(1, dot / mag))) * (180 / Math.PI) : 180;
+            };
+
+            // Tronco: hombro→cadera (inclinación lateral)
+            const midSh  = { x: (j[1].x + j[2].x) / 2, y: (j[1].y + j[2].y) / 2 };
             const midHip = { x: (j[7].x + j[8].x) / 2, y: (j[7].y + j[8].y) / 2 };
             const trunkDx = Math.abs(midSh.x - midHip.x);
             const trunkDy = Math.abs(midSh.y - midHip.y);
             const trunkAngle = Math.atan2(trunkDx, trunkDy) * (180 / Math.PI);
-            const kneeAngle = 135 + Math.sin(curFrameIdx * 0.3) * 35;
+
+            // Rodillas reales: cadera→rodilla→tobillo
+            const kneeAngleL = calcAngle(j[7], j[9],  j[11]);
+            const kneeAngleR = calcAngle(j[8], j[10], j[12]);
+            // Codos reales: hombro→codo→muñeca
+            const elbowAngleL = calcAngle(j[1], j[3], j[5]);
+            const elbowAngleR = calcAngle(j[2], j[4], j[6]);
+            // Cadera real: hombro→cadera→rodilla
+            const hipAngleL = calcAngle(j[1], j[7], j[9]);
+            const hipAngleR = calcAngle(j[2], j[8], j[10]);
 
             historyRef.current.push({
-              hipY: midHip.y,
-              shY: midSh.y,
-              bodyDY: trunkDy,
-              kneeL: kneeAngle,
-              trunkAngle: trunkAngle
+              hipY:       midHip.y,
+              shY:        midSh.y,
+              bodyDY:     trunkDy,
+              kneeL:      Number(kneeAngleL.toFixed(1)),
+              kneeR:      Number(kneeAngleR.toFixed(1)),
+              elbowL:     Number(elbowAngleL.toFixed(1)),
+              elbowR:     Number(elbowAngleR.toFixed(1)),
+              hipL:       Number(hipAngleL.toFixed(1)),
+              hipR:       Number(hipAngleR.toFixed(1)),
+              trunkAngle: Number(trunkAngle.toFixed(1))
             });
             if (historyRef.current.length > 60) historyRef.current.shift();
 
             const isDescenso = curFrameIdx % 30 < 15;
-            const repCount = Math.floor(curFrameIdx / 15) + 1;
-            const baseConf = realSeq.confianza || 0.942;
-            const dynamicScore = Math.min(99.4, Math.max(76.0, baseConf * 100 - (trunkAngle > 15 ? (trunkAngle - 15) * 1.5 : 0) + Math.sin(curFrameIdx * 0.4) * 2));
+            const repCount   = Math.floor(curFrameIdx / 15) + 1;
+            const baseConf   = realSeq.confianza || 0.942;
+            const avgKnee    = (kneeAngleL + kneeAngleR) / 2;
+
+            // Score real: penaliza inclinación de tronco Y extensión insuficiente de rodilla
+            const trunkPenalty = trunkAngle > 15 ? (trunkAngle - 15) * 1.5 : 0;
+            const kneePenalty  = realSeq.clase === 2 && avgKnee < 110 ? (110 - avgKnee) * 0.5 : 0;
+            const dynamicScore = Math.min(99, Math.max(10, baseConf * 100 - trunkPenalty - kneePenalty));
 
             let feedbackText = realSeq.feedback;
             if (realSeq.clase === 0) {
-              feedbackText = `✅ Fotograma #${curFrameIdx + 1} (${isDescenso ? 'Descenso' : 'Ascenso'}): Ángulo de tronco óptimo (${trunkAngle.toFixed(1)}°). Articulaciones alineadas a 90°.`;
+              feedbackText = `✅ Fotograma #${curFrameIdx + 1} (${isDescenso ? 'Descenso' : 'Ascenso'}): Rodilla ${avgKnee.toFixed(1)}° · Tronco ${trunkAngle.toFixed(1)}° — Articulaciones correctas.`;
             } else if (realSeq.clase === 1) {
-              feedbackText = `⚠️ ALERTA en Fotograma #${curFrameIdx + 1}: Inclinación del tronco detectada (${trunkAngle.toFixed(1)}°). Activa el core y endereza la espalda.`;
+              feedbackText = `⚠️ ALERTA Fotograma #${curFrameIdx + 1}: Tronco inclinado ${trunkAngle.toFixed(1)}°. Activa el core y endereza la espalda.`;
             } else {
-              feedbackText = `⚠️ ALERTA en Fotograma #${curFrameIdx + 1}: Cuida la estabilidad de rodillas y codos en el rango de flexión.`;
+              feedbackText = `⚠️ ALERTA Fotograma #${curFrameIdx + 1}: Rodilla ${avgKnee.toFixed(1)}° — Cuida la estabilidad articular.`;
             }
 
             onLiveAssessmentUpdate?.({
-              exercise: realSeq.action,
-              action: realSeq.action,
-              repCount: repCount,
-              phase: isDescenso ? 'down' : 'up',
-              clase: realSeq.clase,
-              type: realSeq.type || 'correct',
-              nombre: realSeq.nombre || 'Postura Analizada',
-              confianza: baseConf,
-              feedback: feedbackText,
+              exercise:    realSeq.action,
+              action:      realSeq.action,
+              repCount,
+              phase:       isDescenso ? 'down' : 'up',
+              clase:       realSeq.clase,
+              type:        realSeq.type || 'correct',
+              nombre:      realSeq.nombre || 'Postura Analizada',
+              confianza:   baseConf,
+              feedback:    feedbackText,
               qualityScore: dynamicScore,
-              history: [...historyRef.current]
+              history:     [...historyRef.current]
             });
           }
         }
